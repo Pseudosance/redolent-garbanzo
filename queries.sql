@@ -9,3 +9,4 @@ SELECT DISTINCT first, last
 FROM Movie, Actor, MovieActor
 WHERE Movie.id = MovieActor.mid AND Actor.id = MovieActor.aid
 
+--  Give me the count of all the actors who acted in multiple movies. 
