@@ -1,12 +1,20 @@
--- Now explore the dataset by running the SELECT statements that answer the following questions from your database:
-
---  Give me the names of all the actors in the movie 'Die Another Day'. Please also make sure actor names are in this format:  <firstname> <lastname>   (seperated by single space). 
---  Movie(id, title, year, rating, company)
---  Actor(id, last, first, sex, dob, dod)
---  MovieActor(mid, aid, role)
-
-SELECT DISTINCT first, last
+-- All Actor names in movie Die Another Day
+SELECT CONCAT(first, " ", last)
 FROM Movie, Actor, MovieActor
-WHERE Movie.id = MovieActor.mid AND Actor.id = MovieActor.aid
+WHERE Movie.title = 'Die Another Day' AND Movie.id = MovieActor.mid AND MovieActor.aid = Actor.id;
 
---  Give me the count of all the actors who acted in multiple movies. 
+-- Count of all Actors who acted in multiple movies
+SELECT COUNT(*)
+FROM (
+	SELECT aid
+	FROM MovieActor
+	GROUP BY aid
+	HAVING COUNT(*) > 1 -- could be >= 2 as well
+); 
+
+-- Another query that you came up with
+-- All PG-13 comedy movies released after 1996 displayed in ascending order by release year
+SELECT rating, genre, year
+FROM Movie, MovieGenre
+WHERE Movie.id = MovieGenre.mid AND Movie.rating = 'PG-13' AND MovieGenre = 'Comedy' AND Movie.year > 1996
+ORDER BY Movie.year DESC; 
