@@ -10,11 +10,11 @@ FROM (
 	FROM MovieActor
 	GROUP BY aid
 	HAVING COUNT(*) > 1 -- could be >= 2 as well
-); 
+) alias; 		-- in testing, comes up as 4824 actors
 
 -- Another query that you came up with
 -- All PG-13 comedy movies released after 1996 displayed in ascending order by release year
 SELECT rating, genre, year
 FROM Movie, MovieGenre
-WHERE Movie.id = MovieGenre.mid AND Movie.rating = 'PG-13' AND MovieGenre = 'Comedy' AND Movie.year > 1996
+WHERE Movie.id = MovieGenre.mid AND Movie.rating = 'PG-13' AND MovieGenre.genre = 'Comedy' AND Movie.year > 1996
 ORDER BY Movie.year DESC; 
