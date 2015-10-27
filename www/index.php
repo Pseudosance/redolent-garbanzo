@@ -36,5 +36,7 @@
 	 </p>
 </div>
 
+<div class="footer verdana navbar-fixed-bottom center"> CS 118 Project 1C by <strong>Mitchell Binning</strong> and <strong>Tremaine Eto</strong> </div>
+
 </body>
 </html>
