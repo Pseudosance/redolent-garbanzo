@@ -106,6 +106,7 @@ if (!$databaseConnection) {
 
 $choices = array("actorOrDirector", "first", "last", "sex", "dobMonth", "dobDay", "dobYear");
 $inputError = false;
+$dateOfDeathError = false;
 
 foreach ($choices as $choice)
 {
@@ -116,11 +117,36 @@ foreach ($choices as $choice)
 	}
 }
 
+if (!empty($_POST[dobMonth]) && !empty($_POST[dobDay]) && !empty($_POST[dobYear]) && !empty($_POST[dodMonth]) && !empty($_POST[dodDay]) && !empty($_POST[dodYear])){
+	if ($_POST[dodYear] < $_POST[dobYear]) {
+		$inputError = true;
+		$dateOfDeathError = true;
+	}
+	if ($_POST[dodYear] == $_POST[dobYear]) {
+		if ($_POST[dodMonth] < $_POST[dobMonth]) {
+			$inputError = true;
+			$dateOfDeathError = true;
+		}
+		if ($_POST[dodMonth] == $_POST[dobMonth]) {
+			if ($_POST[dodDay] < $_POST[dobDay]) {
+				$inputError = true;
+				$dateOfDeathError = true;
+			}
+		}
+	}
+	// otherwise, valid date of death!
+}
+
 // echo $first;
 
 if (isset($_POST["submit"])) {
 	if ($inputError == true) {
-		echo "<strong><p class='red center'>Argh! There was an input error. Try again.</p></strong>";
+		if ($dateOfDeathError == true) {
+			echo "<strong><p class='red center'>Oh no! The date of death you entered is impossible.</p></strong>";
+		}
+		else {
+			echo "<strong><p class='red center'>Argh! There was an input error. Try again.</p></strong>";
+		}
 	}
 	else {
 			$idFROMmaxPersonId = "SELECT id FROM MaxPersonID";
