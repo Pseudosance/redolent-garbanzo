@@ -14,7 +14,7 @@
 	// Get the id of movie to display info for
 	// 2632 is matrix
 	// 2 is the lowest number mid
-	$m_id = $_GET['m_id'] ? $_GET['m_id'] : '2';
+	$m_id = $_GET['id'] ? $_GET['id'] : '2';
 	
 	// SQL Statments
 		// Movie query statement
@@ -60,7 +60,9 @@
 		$mDirectorData = mysql_fetch_row($mMovieTable);
 	if($mMovieTable && mysql_num_rows($mMovieTable) > 0)
 		$mMovieData = mysql_fetch_row($mMovieTable);*/
-					
+		
+		
+	mysql_close($db_connection);		
 ?>
 
 <!-- HTML To display data -->
@@ -174,12 +176,13 @@
 			echo '<br/>';
 			echo "<a href = './addComments.php?id=$m_id'>Review This Movie!</a>";
 			echo '<br/>';
-			echo 'User comments: ' . '<br/>';
+			echo 'User comments: ' . '<br/>' . '<br/>';
 			if($mReviewsTable && mysql_num_rows($mReviewsTable) > 0 ){
 				while($row = mysql_fetch_row($mReviewsTable)){
-					echo "On " . $row[1] . " " . $row[0] . " gave this movie a " . $row[3] . "/5 " . "and said ";
+					echo "On " . $row[1] . " " . '<br/>' . $row[0] . " scored this movie " . $row[2] . "/5 " . "and said: ";
 					echo '<br/>';
-					echo $row[2]; 
+					echo $row[3]; 
+					echo '<br/> <br/>';
 				}
 			}	
 			else{
