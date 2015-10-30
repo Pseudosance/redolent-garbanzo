@@ -36,5 +36,7 @@
 	 </p>
 </div>
 
+<div class="footer navbar-fixed-bottom"> <strong> CS 118 Project 1C by Mitchell Binning and Tremaine Eto </strong> </div>
+
 </body>
 </html>

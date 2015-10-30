@@ -31,9 +31,38 @@
 
 <?php
 
-$database_connection = mysql_connect("localhost", "cs143", "");
-mysql_select_db("CS143", $db_connection);
+$databaseConnection = mysql_connect("localhost", "cs143", "");
+mysql_select_db("CS143", $databaseConnection);
 
 $choices = array("actorOrDirector", "first", "last", "sex", "dob");
+
+if (isset($_POST["submit"])) {
+
+		$idFROMmaxPersonId = "SELECT id FROM MaxPersonID";
+		$rowOfIdsFromMaxPersonId = mysql_fetch_row(mysql_query($idFROMmaxPersonId, $databaseConnection));
+		$id = $rowOfIdsFromMaxPersonId[0]; // id from first row
+
+		if ($_POST['actorOrDirector'] == "Director") 
+		{
+			$addDirector = "INSERT INTO $_POST[actorOrDirector] (id, last, first, dob, dod)
+							VALUES ($id, '$_POST[last]', '$_POST[first]', '$_POST[dob]', '$_POST[dod]')";
+			$resultResource = mysql_query($addDirector, $databaseConnection);
+		}
+		else // if ($_POST['actorOrDirector'] == "Actor")
+		{
+			$addActor = "INSERT INTO $_POST[actorOrDirector] (id, last, first, sex, dob, dod)
+						VALUES ($id, '$_POST[last]', '$_POST[first]', '$_POST[sex]', '$_POST[dob]', '$_POST[dod]')";
+			$resultResource = mysql_query($addActor, $databaseConnection);
+		}
+
+		// if (!$result)
+ 
+ 		// Successful addition
+ 		$updateActorOrDirector = "UPDATE MaxPersonID 
+ 								SET id = id + 1";
+ 		$updateResultResource = mysql_query($updateActorOrDirector, $databaseConnection);
+}
+
+mysql_close(databaseConnection);
 
 ?>
