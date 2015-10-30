@@ -83,16 +83,25 @@
 		echo $director_id;
 		echo '<br/>';
 			
-			// TODO: WHAT THE MOTHER FUCKING FUCK IS WITH THE FUCKING DUPES I SWEAR TO GOD I COULD KILL A FUCKING RHNIOCEROUS MONSTER GIRAFFE FUCK I AM SO FUCKING PISSED FUCK YOU YOU FUCKING DICKWAD ASS FUCK I WILL FUCKING KILL MYSELF :(
-		$add_sql = "INSERT IGNORE INTO MovieDirector (mid, did)
+		$add_check_sql = "SELECT * 
+		 			FROM MovieDirector 
+					WHERE mid = $movie_id AND did = $director_id";
+					
+		$add_sql = "INSERT INTO MovieDirector (mid, did) 
 					VALUES ($movie_id, $director_id)";
-								
-		if (mysql_query($add_sql, $db_connection)){
-			echo "added director to movie ";
-		} 
-		else { 
-			echo "Failed "; 
+		
+		$add_check = mysql_query($add_check_sql, $db_connection);
+	
+		if(mysql_num_rows($add_check) == 0){
+			if (mysql_query($add_sql, $db_connection)){
+				echo "added director to movie ";
+			} 
+			else { 
+				echo "Failed "; 
+			}
 		}
+		else 
+			echo "This Director Movie relation already exists";
 		
 	}
 	
