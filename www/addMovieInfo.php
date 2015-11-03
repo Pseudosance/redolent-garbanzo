@@ -108,8 +108,8 @@
 			$rowOfIdsFromMaxPersonId = mysql_fetch_row(mysql_query($idFROMmaxPersonId, $databaseConnection));
 			$id = $rowOfIdsFromMaxPersonId[0]; // id from first row
 
-			$addMovieInfo = "INSERT INTO Movie 
-							VALUES($id, '$_POST[title]', '$_POST[year], '$_POST[rating]', '$_POST[company]')";
+			$addMovieInfo = "INSERT INTO Movie (id, title, year, rating, company)
+							VALUES ($id, '$_POST[title]', $_POST[year], '$_POST[rating]', '$_POST[company]')";
 
 			echo "$mysql_query($addMovieInfo, $databaseConnection)";
 
