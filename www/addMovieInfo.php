@@ -104,17 +104,17 @@
 				}
 			}
 
-			$idFROMmaxPersonId = "SELECT id FROM MaxPersonID";
-			$rowOfIdsFromMaxPersonId = mysql_fetch_row(mysql_query($idFROMmaxPersonId, $databaseConnection));
-			$id = $rowOfIdsFromMaxPersonId[0]; // id from first row
+			$idFROMmaxMovieId = "SELECT id FROM MaxMovieID";
+			$rowOfIdsFromMaxMovieId = mysql_fetch_row(mysql_query($idFROMmaxMovieId, $databaseConnection));
+			$id = $rowOfIdsFromMaxMovieId[0]; // id from first row
 
 			$addMovieInfo = "INSERT INTO Movie (id, title, year, rating, company)
 							VALUES ($id, '$_POST[title]', $_POST[year], '$_POST[rating]', '$_POST[company]')";
 
-			echo "$mysql_query($addMovieInfo, $databaseConnection)";
+			//echo "$mysql_query($addMovieInfo, $databaseConnection)";
 
 			if (mysql_query($addMovieInfo, $databaseConnection)) {
-				echo"yay";
+				//echo"yay";
 				foreach($movieGenres as $movieGenre){
 					mysql_query("INSERT INTO MovieGenre 
 								VALUES ($id, '$movieGenre')", $databaseConnection);
@@ -124,6 +124,7 @@
 				echo "<strong><p class='center green'>Congrats! You added the movie information to the database!</p></strong>";
 			}
 			else {
+				echo "why";
 				echo "<strong><p class='center red'>There was a problem adding the movie information to the database. Sorry.</p></strong>";
 			}
 
