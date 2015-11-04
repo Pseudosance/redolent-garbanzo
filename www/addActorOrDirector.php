@@ -104,7 +104,14 @@ if (!$databaseConnection) {
 		exit;
 }
 
+$sanitizedFirst = mysql_real_escape_string($_POST[first], $databaseConnection);
+$sanitizedLast = mysql_real_escape_string($_POST[last], $databaseConnection);
+
+// echo "$sanitizedFirst";
+// echo "$sanitizedLast";
+
 $choices = array("actorOrDirector", "first", "last", "sex", "dobMonth", "dobDay", "dobYear");
+
 $inputError = false;
 $dateOfDeathError = false;
 
@@ -168,12 +175,12 @@ if (isset($_POST["submit"])) {
 			{
 				if ($personIsDead == true) {
 					$addDirector = "INSERT INTO $_POST[actorOrDirector] (id, last, first, dob, dod)
-									VALUES ($id, '$_POST[last]', '$_POST[first]', '$dob', NULL)";
+									VALUES ($id, '$sanitizedLast', '$sanitizedFirst', '$dob', NULL)";
 					//$resultResource = mysql_query($addDirector, $databaseConnection);
 				}
 				else {
 					$addDirector = "INSERT INTO $_POST[actorOrDirector] (id, last, first, dob, dod)
-									VALUES ($id, '$_POST[last]', '$_POST[first]', '$dob', '$dod')";
+									VALUES ($id, '$sanitizedLast', '$sanitizedFirst', '$dob', '$dod')";
 					//$resultResource = mysql_query($addDirector, $databaseConnection);
 				}
 			}
@@ -181,12 +188,12 @@ if (isset($_POST["submit"])) {
 			{
 				if ($personIsDead == true) {
 					$addActor = "INSERT INTO $_POST[actorOrDirector] (id, last, first, sex, dob, dod)
-								VALUES ($id, '$_POST[last]', '$_POST[first]', '$_POST[sex]', '$dob', NULL)";
+								VALUES ($id, '$sanitizedLast', '$sanitizedFirst', '$_POST[sex]', '$dob', NULL)";
 					//$resultResource = mysql_query($addActor, $databaseConnection);
 				}
 				else {
 					$addActor = "INSERT INTO $_POST[actorOrDirector] (id, last, first, sex, dob, dod)
-								VALUES ($id, '$_POST[last]', '$_POST[first]', '$_POST[sex]', '$dob', '$dod')";
+								VALUES ($id, '$sanitizedLast', '$sanitizedFirst', '$_POST[sex]', '$dob', '$dod')";
 					//$resultResource = mysql_query($addActor, $databaseConnection);
 				}
 			}
