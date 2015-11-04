@@ -34,7 +34,9 @@
 
 		mysql_select_db("CS143", $databaseConnection);
 
-        $input = $_GET['search'];
+		$input = mysql_real_escape_string($_GET['search'], $databaseConnection);
+
+        //$input = $_GET['search'];
         $inputTerms = explode(' ', $input);		// tokenize by spaces
         if (count($inputTerms) == 0 || !$inputTerms) {
             echo "<p class='red'><strong>Ack! You didn't put anything into the search field!</p></strong>";

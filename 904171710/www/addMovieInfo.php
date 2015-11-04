@@ -98,6 +98,10 @@
 				exit;
 			}
 
+			$sanitizedTitle = mysql_real_escape_string($_POST[title], $databaseConnection);
+			$sanitizedYear = mysql_real_escape_string($_POST[year], $databaseConnection);
+			$sanitizedCompany = mysql_real_escape_string($_POST[company], $databaseConnection);
+
 			for($i = 0; $i <= 18; $i++) {
 				if(isset($_POST["genre"][$i])) {
 					array_push($movieGenres, $_POST["genre"][$i]);
@@ -109,7 +113,7 @@
 			$id = $rowOfIdsFromMaxMovieId[0]; // id from first row
 
 			$addMovieInfo = "INSERT INTO Movie (id, title, year, rating, company)
-							VALUES ($id, '$_POST[title]', $_POST[year], '$_POST[rating]', '$_POST[company]')";
+							VALUES ($id, '$sanitizedTitle', $sanitizedYear, '$_POST[rating]', '$sanitizedCompany')";
 
 			//echo "$mysql_query($addMovieInfo, $databaseConnection)";
 
