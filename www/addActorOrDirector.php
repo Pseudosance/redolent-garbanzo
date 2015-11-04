@@ -153,11 +153,13 @@ if (isset($_POST["submit"])) {
 			$rowOfIdsFromMaxPersonId = mysql_fetch_row(mysql_query($idFROMmaxPersonId, $databaseConnection));
 			$id = $rowOfIdsFromMaxPersonId[0]; // id from first row
 			$personIsDead = false;
-			$dob = "$dobYear-$dobMonth-$dobDay"; 
-			$dod = "$dodYear-$dodMonth-$dodDay"; 
+			$dob = "$_POST[dobYear]-$_POST[dobMonth]-$_POST[dobDay]"; 
+			$dod = "$$_POST[dodYear]-$_POST[dodMonth]-$_POST[dodDay]"; 
+
+			//echo "$dob";
 			//$resultResource = "";
 
-			if (empty($_POST['dod']))
+			if (!empty($_POST[dodMonth]) && !empty($_POST[dodYear]) && !empty($_POST[dodDay]))
 			{
 				$personIsDead = true;
 			}
@@ -166,12 +168,12 @@ if (isset($_POST["submit"])) {
 			{
 				if ($personIsDead == true) {
 					$addDirector = "INSERT INTO $_POST[actorOrDirector] (id, last, first, dob, dod)
-									VALUES ($id, '$_POST[last]', '$_POST[first]', '$_POST[dob]', NULL)";
+									VALUES ($id, '$_POST[last]', '$_POST[first]', '$dob', NULL)";
 					//$resultResource = mysql_query($addDirector, $databaseConnection);
 				}
 				else {
 					$addDirector = "INSERT INTO $_POST[actorOrDirector] (id, last, first, dob, dod)
-									VALUES ($id, '$_POST[last]', '$_POST[first]', '$_POST[dob]', '$_POST[dod]')";
+									VALUES ($id, '$_POST[last]', '$_POST[first]', '$dob', '$dod')";
 					//$resultResource = mysql_query($addDirector, $databaseConnection);
 				}
 			}
@@ -179,12 +181,12 @@ if (isset($_POST["submit"])) {
 			{
 				if ($personIsDead == true) {
 					$addActor = "INSERT INTO $_POST[actorOrDirector] (id, last, first, sex, dob, dod)
-								VALUES ($id, '$_POST[last]', '$_POST[first]', '$_POST[sex]', '$_POST[dob]', NULL)";
+								VALUES ($id, '$_POST[last]', '$_POST[first]', '$_POST[sex]', '$dob', NULL)";
 					//$resultResource = mysql_query($addActor, $databaseConnection);
 				}
 				else {
 					$addActor = "INSERT INTO $_POST[actorOrDirector] (id, last, first, sex, dob, dod)
-								VALUES ($id, '$_POST[last]', '$_POST[first]', '$_POST[sex]', '$_POST[dob]', '$_POST[dod]')";
+								VALUES ($id, '$_POST[last]', '$_POST[first]', '$_POST[sex]', '$dob', '$dod')";
 					//$resultResource = mysql_query($addActor, $databaseConnection);
 				}
 			}

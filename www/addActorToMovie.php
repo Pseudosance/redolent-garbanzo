@@ -82,12 +82,12 @@
 		$movie_id = $_POST[movie];
 		$actor_id = $_POST[actor];
 		$role = $_POST[role];
-		echo $movie_id;
-		echo '<br/>';
-		echo $actor_id;
-		echo '<br/>';
-		echo $role;
-		echo '<br/>';
+		// echo $movie_id;
+		// echo '<br/>';
+		// echo $actor_id;
+		// echo '<br/>';
+		// echo $role;
+		// echo '<br/>';
 		
 			
 		$add_check_sql = "SELECT * 
@@ -106,18 +106,18 @@
 	
 		if(mysql_num_rows($add_check) == 0){
 			if (mysql_query($add_sql, $db_connection)){
-				echo "added actor to movie ";
+				echo "<p class='green'><strong>Added actor to movie relation</p></strong>";
 			} 
 			else { 
-				echo "Failed "; 
+				echo "<p class='red'><strong>Failed.</p></strong>"; 
 			}
 		}
 		else {
 			if (mysql_query($update_sql, $db_connection)){
-				echo "updated actor to movie relation ";
+				echo "<p class='green'><strong>Updated actor to movie relation</p></strong>";
 			} 
 			else { 
-				echo "Failed "; 
+				echo "<p class='red'><strong>Failed.</p></strong>"; 
 			}
 			
 		}
