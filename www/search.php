@@ -73,14 +73,24 @@
 
         // now actor, which is essentially the same code as Movie but with different table info
 
-	    $queryByActor = "SELECT * 
+        if ($numberOfInputTerms == 1) {
+        		    $queryByActor = "SELECT * 
+	    				FROM Actor 
+	    				WHERE first 
+	    				LIKE '%" . $inputTerms[0] . "%' OR last LIKE '%" . $inputTerms[0] . "%'";
+        }
+
+	    else if ($numberOfInputTerms == 2) { 
+	    	$queryByActor = "SELECT * 
 	    				FROM Actor 
 	    				WHERE first 
 	    				LIKE '%" . $inputTerms[0] . "%' AND last LIKE '%" . $inputTerms[1] . "%'";
-
-	    for($j = 1; $j < $numberOfInputTerms; $j++) {
-	        $searchActorQuery .= "OR first LIKE '%" . $inputTerms[$j] . "%' AND  last LIKE '%" . $inputTerms[$j] . "%' " ;
 	    }
+
+	    // for($j = 1; $j < $numberOfInputTerms; $j++) {
+	    // 	//echo "entered this";
+	    //     $queryByActor .= "OR first LIKE '%" . $inputTerms[$j] . "%' AND last LIKE '%" . $inputTerms[$j] . "%' " ;
+	    // }
 	    
 	    // add a semicolon
 	    $queryByActor .= ";";
