@@ -12,14 +12,14 @@
 </div>
 
 <div class="center">
-	<strong><p>Search for your favorite actor or movie: </p></strong>
+<!-- 	<strong><p>Search for your favorite actor or movie: </p></strong> -->
 <!-- 	<form method="GET" action="./search.php">		
 		<input type="text" name="query">
 		<input class="btn btn-primary btn-sm" type="submit" value="search">
 	</form> -->
 
 	<p>
-		<a class="btn btn-success btn-md" href="./search.php" role="button">Search</a>
+		<a class="btn btn-success btn-md" href="./search.php" role="button">Search for actor or movie</a>
 	</p>
 
 	 <p>
