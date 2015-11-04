@@ -1,7 +1,3 @@
-<?php>
-
-<?>
-
 <link rel="stylesheet" href="bootstrap.css" type="text/css">
 <link rel="stylesheet" href="style.css" type="text/css">
 
@@ -17,10 +13,14 @@
 
 <div class="center">
 	<strong><p>Search for your favorite actor or movie: </p></strong>
-	<form method="GET" action="./search.php">		<!-- need to implement search.php -->
+<!-- 	<form method="GET" action="./search.php">		
 		<input type="text" name="query">
 		<input class="btn btn-primary btn-sm" type="submit" value="search">
-	</form>
+	</form> -->
+
+	<p>
+		<a class="btn btn-success btn-md" href="./search.php" role="button">Search</a>
+	</p>
 
 	 <p>
 	 	<a class="btn btn-success btn-sm" href="./addActorOrDirector.php" role="button">Add actor or director</a>
@@ -36,7 +36,13 @@
 	 </p>
 </div>
 
-<div class="footer navbar-fixed-bottom center"> <strong> CS 118 Project 1C by Mitchell Binning and Tremaine Eto </strong> </div>
+<div class="footer navbar-fixed-bottom"> <strong> CS 118 Project 1C by Mitchell Binning and Tremaine Eto </strong> </div>
 
 </body>
 </html>
+
+<?php
+
+	
+
+?>
