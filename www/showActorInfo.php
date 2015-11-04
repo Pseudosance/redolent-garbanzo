@@ -1,5 +1,4 @@
 <?php
-	//echo "Starting" . "<br/>";
 	// Establish database connection and do basic error handling
 	$db_connection = mysql_connect("localhost", "cs143", "");
 	if(!$db_connection) {
