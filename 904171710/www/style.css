@@ -1,0 +1,33 @@
+body {
+	background-color: #CAEFFE;
+}
+
+h1 { 
+	font: "Verdana";
+	font-size: 72px;
+}
+
+.verdana {
+	font: "Verdana";
+}
+
+.center {
+	text-align: center;
+}
+
+.jumbotron {
+	background-color: #002B77;
+	color: #FFFFFF;
+}
+
+.red { 
+	color: red;	
+}
+
+.purple {
+	color: purple;
+}
+
+.green {
+	color: green;
+}
