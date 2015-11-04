@@ -124,7 +124,6 @@
 				echo "<strong><p class='center green'>Congrats! You added the movie information to the database!</p></strong>";
 			}
 			else {
-				echo "why";
 				echo "<strong><p class='center red'>There was a problem adding the movie information to the database. Sorry.</p></strong>";
 			}
 
