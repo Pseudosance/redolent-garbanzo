@@ -130,11 +130,60 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   return rc;
 }
 
+/*
+when the user issues the command "LOAD movie FROM 'movieData.del'", 
+you should create a RecordFile named movie.tbl (in the current working directory) and store all tuples in the file. 
+If the file already exists, the LOAD command should append all records in the load file to the end of the table. 
+Roughly, your implementation of the load function should open the input loadfile and the RecordFile,
+parse each line of the loadfile to read a tuple (possibly using SqlEngine::parseLoadLine()) and insert the tuple to the RecordFile.
+*/
 RC SqlEngine::load(const string& table, const string& loadfile, bool index)
 {
   /* your code here */
+  // Copied from the select function
+  RecordFile rf;   // record for the table
+  RecordId   rid;  // record cursor for table scanning
 
-  return 0;
+  RC     rc;
+  int    key;     
+  string value;
+  
+  // open the table file (Copied from select function, but with write attribute instead of read
+  if ((rc = rf.open(table + ".tbl", 'w')) < 0) { // Create a record file named movie.tbl
+    fprintf(stderr, "Error: Failed to create or open table %s \n", table.c_str());
+    return rc;
+  }
+  
+  if(index)
+  {
+    
+    // Do indexy shit later
+    
+  }
+  else{
+    // Get end of records 
+    rid = rf.endRid
+    // open file stream 
+    fstream loading (loadfile.c_str());
+    if(loading.is_open()){
+      string line; 
+      while(getline(loading, line))
+      {
+        // Append to table
+        parseLoadLine(line, key, value);
+        rc = rf.append(key, value, rid);
+      }
+    }
+    else{
+          fprintf(stderr, "Error: Failed to open load file %s \n", loadfile.c_str());
+          rc =  RC_FILE_OPEN_FAILED;
+    }
+  }
+  
+  loading.close();
+  rf.close();
+  
+  return rc;
 }
 
 RC SqlEngine::parseLoadLine(const string& line, int& key, string& value)
