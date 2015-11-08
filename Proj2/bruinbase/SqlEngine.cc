@@ -141,6 +141,7 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
 {
   /* your code here */
   // Copied from the select function
+  printf("Entered Load");
   RecordFile rf;   // record for the table
   RecordId   rid;  // record cursor for table scanning
 
@@ -162,7 +163,7 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   }
   else{
     // Get end of records 
-    rid = rf.endRid
+    rid = rf.endRid();
     // open file stream 
     fstream loading (loadfile.c_str());
     if(loading.is_open()){
@@ -173,14 +174,14 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
         parseLoadLine(line, key, value);
         rc = rf.append(key, value, rid);
       }
+        loading.close();
     }
     else{
           fprintf(stderr, "Error: Failed to open load file %s \n", loadfile.c_str());
           rc =  RC_FILE_OPEN_FAILED;
     }
   }
-  
-  loading.close();
+ 
   rf.close();
   
   return rc;
