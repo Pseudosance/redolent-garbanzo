@@ -29,6 +29,16 @@ BTreeIndex::BTreeIndex()
  */
 RC BTreeIndex::open(const string& indexname, char mode)
 {
+    RC rc = pf.open(indexname, mode);
+    
+    // as specified by spec: "error code. 0 if no error"
+    if (rc != 0) {
+        return rc;
+    }
+    
+    
+    
+    
     return 0;
 }
 
