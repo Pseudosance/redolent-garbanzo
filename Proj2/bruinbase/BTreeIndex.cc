@@ -101,6 +101,35 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
  */
 RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 {
+    BTLeafNode leafNode;        // calls constructor
+    BTNonLeafNode nonLeafNode;  // calls constructor
+    
+    if (rootPid == -1 || treeHeight == 0){
+        return RC_FILE_SEEK_FAILED;     // tree is empty
+    }
+    
+    PageId pid = rootPid;
+    
+    for (int i = 0; i < treeHeight - 1; i++) {      // will take you to leaf node
+        nonLeafNode.read(pid, pf);                  // reads the pid into the nonLeafNode
+        nonLeafNode.locateChildPtr(searchKey, pid);
+    }
+    
+    // pid now has the pid of the leaf node we are trying to locate
+    
+    if (leafNode.read(pid, pf) != 0) {  // read pid into leaf node
+        return RC_FILE_READ_FAILED;
+    }
+    
+    int eid = -1;
+    
+    if (leafNode.locate(searchKey, eid) != 0) {
+        return RC_FILE_SEEK_FAILED;
+    }
+    
+    cursor.pid = pid;
+    cursor.eid = eid;
+    
     return 0;
 }
 
