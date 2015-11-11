@@ -29,17 +29,36 @@ BTreeIndex::BTreeIndex()
  */
 RC BTreeIndex::open(const string& indexname, char mode)
 {
+    
+    char buffer[PageFile::PAGE_SIZE]; //buffer to read index into
+    
     RC rc = pf.open(indexname, mode);
     
-    // as specified by spec: "error code. 0 if no error"
+    // as specified by spec: "error code. 0 if no error"...could not open
     if (rc != 0) {
-        return rc;
+        return RC_FILE_OPEN_FAILED;
     }
     
+    // endPid() returns the id of the last page in the file (+ 1)
     
+    // thus, if it's 0, then there are no pages in the file.
     
+    if (pf.endPid() == 0) {
+        treeHeight = 0;
+        rootPid = -1;
+        close();
+        return open(indexname, mode);
+    }
     
-    return 0;
+    else {
+        if (pf.read(0, buffer) != 0) {      // failed to read
+            return RC_FILE_READ_FAILED;
+        }
+        memcpy(&treeHeight, buffer, sizeof(int));
+        memcpy(&rootPid, buffer + sizeof(int), sizeof(PageId));
+    }
+    
+    return 0;   // no errors
 }
 
 /*
