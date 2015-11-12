@@ -13,6 +13,15 @@
 #include "RecordFile.h"
 #include "PageFile.h"
 
+
+
+
+// size of the (PageId, key) pairs
+const int nonLeafNode_pairSize = sizeof(PageId) + sizeof(int);
+
+// the number of how many (PageId, key) pairs can fit in a node
+const int nonLeafNode_keyLimit = sizeof((PageFile::PAGE_SIZE - sizeof(PageId))/nonLeafNode_pairSize);
+
 /**
  * BTLeafNode: The class representing a B+tree leaf node.
  */
@@ -112,6 +121,9 @@ class BTLeafNode {
  */
 class BTNonLeafNode {
   public:
+    
+    BTNonLeafNode();        // needed for constructor in BTreeNode.cc
+    
    /**
     * Insert a (key, pid) pair to the node.
     * Remember that all keys inside a B+tree node should be kept sorted.

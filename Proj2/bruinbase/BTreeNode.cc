@@ -89,14 +89,31 @@ PageId BTLeafNode::getNextNodePtr()
 RC BTLeafNode::setNextNodePtr(PageId pid)
 { return 0; }
 
+
+
+
+
+
+/********************** NONLEAFNODE **********************/
+
+/* Constructor
+ *
+ *
+ */
+BTNonLeafNode::BTNonLeafNode() {        // had to add in public for BTreeNode.h
+    //memset(buffer, 0, PageFile::PAGE_SIZE); //   from private: buffer[PageFile::PAGE_SIZE]
+}
+
 /*
  * Read the content of the node from the page pid in the PageFile pf.
  * @param pid[IN] the PageId to read
  * @param pf[IN] PageFile to read from
  * @return 0 if successful. Return an error code if there is an error.
  */
-RC BTNonLeafNode::read(PageId pid, const PageFile& pf)
-{ return 0; }
+RC BTNonLeafNode::read(PageId pid, const PageFile& pf) {
+    //return 0;
+     return pf.read(pid, buffer);
+}
     
 /*
  * Write the content of the node to the page pid in the PageFile pf.
@@ -104,15 +121,31 @@ RC BTNonLeafNode::read(PageId pid, const PageFile& pf)
  * @param pf[IN] PageFile to write to
  * @return 0 if successful. Return an error code if there is an error.
  */
-RC BTNonLeafNode::write(PageId pid, PageFile& pf)
-{ return 0; }
+RC BTNonLeafNode::write(PageId pid, PageFile& pf) {
+    //return 0;
+    return pf.write(pid, buffer);
+}
 
 /*
  * Return the number of keys stored in the node.
  * @return the number of keys in the node
  */
-int BTNonLeafNode::getKeyCount()
-{ return 0; }
+int BTNonLeafNode::getKeyCount() {
+        int count = 0;
+        // Need to index and iterate through buffer using int sizes
+        int* bufferInts = (int *) buffer;
+        // Calculate the increment in integer size to get to next pair
+        int pairIncr = nonLeafNode_pairSize/4;
+        for (int pairIndex = 0; pairIndex < nonLeafNode_keyLimit * pairIncr; pairIndex += pairIncr)
+        {
+            /* Detect when buffer becomes unused */
+            if(bufferInts[pairIndex] == -1)
+                break;
+            else
+                count += 1;
+        }
+        return count;
+}
 
 
 /*
