@@ -96,12 +96,17 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
 
 /********************** NONLEAFNODE **********************/
 
+//void initializeBuffer(void* buffer, int initializedValue, size_t pageSize){
+//    memset(buffer, initializedValue, pageSize);
+//}
+
 /* Constructor
  *
  *
  */
 BTNonLeafNode::BTNonLeafNode() {        // had to add in public for BTreeNode.h
     memset(buffer, -1, PageFile::PAGE_SIZE); //   from private: buffer[PageFile::PAGE_SIZE]
+    //initializeBuffer(buffer, -1, PageFile::PAGE_SIZE);
 }
 
 /*
@@ -187,5 +192,23 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid)
  * @param pid2[IN] the PageId to insert behind the key
  * @return 0 if successful. Return an error code if there is an error.
  */
-RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2)
-{ return 0; }
+RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
+    //int* bufferInts = (int *) buffer;
+    
+    char* memoryPointer = &(buffer[0]);
+    memoryPointer = memoryPointer + sizeof(int);
+    
+    memcpy(memoryPointer, &pid1, sizeof(PageId));
+    memoryPointer = memoryPointer + sizeof(PageId);
+    
+    memcpy(memoryPointer, &key, sizeof(int));
+    memoryPointer = memoryPointer + sizeof(int);
+    
+    memcpy(memoryPointer, &pid2, sizeof(PageId));
+    
+    int initializedValue = 1;
+    
+    memcpy(buffer, &initializedValue, sizeof(int));
+    
+    return 0;
+}
