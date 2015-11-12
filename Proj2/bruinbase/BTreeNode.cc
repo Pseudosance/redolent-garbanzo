@@ -101,7 +101,7 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
  *
  */
 BTNonLeafNode::BTNonLeafNode() {        // had to add in public for BTreeNode.h
-    //memset(buffer, 0, PageFile::PAGE_SIZE); //   from private: buffer[PageFile::PAGE_SIZE]
+    memset(buffer, -1, PageFile::PAGE_SIZE); //   from private: buffer[PageFile::PAGE_SIZE]
 }
 
 /*
