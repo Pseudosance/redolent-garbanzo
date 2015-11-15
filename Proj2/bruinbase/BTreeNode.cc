@@ -76,9 +76,9 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 	int free_slot;
 	int pageID = rid.pid;
 	int slotID = rid.sid;
-	int old_pageID = NULL;
-	int old_slotID = NULL;
-	int old_key = NULL;
+	int old_pageID = -1;
+	int old_slotID = -1;
+	int old_key;
 	for(free_slot = 0; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=3){
 		if(bufferInts[free_slot] == -1)
 			break;
@@ -98,7 +98,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 	}
 	
 	// Have combed through all used slots
-	if(old_key == NULL) // If old key is null, that means we didn't replace any old nodes and just inserted.
+	if(old_pageID == -1 && old_slotID == -1) // If old key is null, that means we didn't replace any old nodes and just inserted.
 		return 0;
 	
 	// If old key is not null, we need to insert all the old shit into the free slot.
@@ -335,8 +335,8 @@ RC BTNonLeafNode::insert(int key, PageId pid) {
     // Find first free space in Node to insert pair and find slot to insert new key
     int free_slot;
     int pageID = pid;
-    int old_pageID = NULL;
-    int old_key = NULL;
+    int old_pageID = -1;
+    int old_key;
     
     for (free_slot = 0; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=2) {
         if (bufferInts[free_slot] == -1)
@@ -354,7 +354,7 @@ RC BTNonLeafNode::insert(int key, PageId pid) {
     }
     
     // Have combed through all used slots
-    if (old_key == NULL) // If old key is null, that means we didn't replace any old nodes and just inserted.
+    if (old_pageID == -1) // If old key is null, that means we didn't replace any old nodes and just inserted.
         return 0;
     
     // If old key is not null, we need to insert all the old shit into the free slot.
