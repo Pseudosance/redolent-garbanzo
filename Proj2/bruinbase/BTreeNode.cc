@@ -161,7 +161,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
 	}
 	
 	siblingKey = sibling.buffer[2];
-	return siblingKey;
+	return 0;
 }
 
 /**
@@ -176,7 +176,31 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
  * @return 0 if searchKey is found. Otherwise return an error code.
  */
 RC BTLeafNode::locate(int searchKey, int& eid)
-{ return 0; }
+{ 
+    // Get an int buffer because its easier to work with
+    int* bufferInts = (int *) buffer;
+    
+    // iterate through the node looking for the searchKey.
+        // TODO: Change to binary search for improved performance, it is hinted we should do so because the nodes are always sorted.
+    int location = 0;
+    for(location; location < 255 && bufferInts[location] != -1; location+=3){
+        int key_pos = location+2;
+        if(bufferInts[key_pos] == searchKey)
+        {
+            // TODO: find out if should return location in char buffer or location in int buffer
+            eid = location*4; // Multiply by 4 to have index entry in char buffer
+            return 0;
+        }
+    }
+    
+    if(location == 255){
+        eid = -1;
+        return RC_END_OF_TREE;
+    }
+    
+    eid = location*4; // Find out if should return location in char buffer or location in int buffer...
+    return RC_NO_SUCH_RECORD;
+}
 
 /*
  * Read the (key, rid) pair from the eid entry.
@@ -186,14 +210,33 @@ RC BTLeafNode::locate(int searchKey, int& eid)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
-{ return 0; }
+{ 
+    if(eid < 0 || eid >= 1016)
+        return RC_INVALID_CURSOR;
+        
+    // Get an int buffer because its easier to work with
+    int* bufferInts = (int *) buffer;
+    // Adjust index entry to be for integer array
+    eid_intBuffer = eid/4;
+    
+    rid.pid = bufferInts[eid_intBuffer];
+    rid.sid = bufferInts[eid_intBuffer+1];
+    key = bufferInts[eid_intBuffer+2];
+    
+    return 0; 
+}
 
 /*
  * Return the pid of the next slibling node.
  * @return the PageId of the next sibling node 
  */
 PageId BTLeafNode::getNextNodePtr()
-{ return 0; }
+{ 
+   // Get an int buffer because its easier to work with
+    int* bufferInts = (int *) buffer;
+    
+    return bufferInts[PageFile::PAGE_SIZE-1];
+}
 
 /*
  * Set the pid of the next slibling node.
@@ -201,7 +244,15 @@ PageId BTLeafNode::getNextNodePtr()
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::setNextNodePtr(PageId pid)
-{ return 0; }
+{ 
+    // Get an int buffer because its easier to work with
+    int* bufferInts = (int *) buffer;
+    bufferInts[PageFile::PAGE_SIZE-1] = pid;
+    return 0; 
+}
+
+// TODO: Redo insert and insert and split using locate, getNextNodePtr, and setNextNodePtr....
+// TODO: Consider changing the buffer member variable to an int array instead of char arrary....
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
