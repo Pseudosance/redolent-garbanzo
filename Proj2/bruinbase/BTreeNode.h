@@ -30,6 +30,9 @@ const int nonLeafNode_keyLimit = (PageFile::PAGE_SIZE - sizeof(PageId))/nonLeafN
  */
 class BTLeafNode {
   public:
+    
+    BTLeafNode();        // needed for constructor in BTreeNode.cc
+
    /**
     * Insert the (key, rid) pair to the node.
     * Remember that all keys inside a B+tree node should be kept sorted.

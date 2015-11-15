@@ -74,9 +74,9 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 	int free_slot = 0;
 	int pageID = rid.pid;
 	int slotID = rid.sid;
-	int old_pageID = null;
-	int old_slotID = null;
-	int old_key = null;
+	int old_pageID = NULL;
+	int old_slotID = NULL;
+	int old_key = NULL;
 	for(free_slot; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=3){
 		if(bufferInts[free_slot] == -1)
 			break;
@@ -96,7 +96,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 	}
 	
 	// Have combed through all used slots
-	if(old_key == null) // If old key is null, that means we didn't replace any old nodes and just inserted.
+	if(old_key == NULL) // If old key is null, that means we didn't replace any old nodes and just inserted.
 		return 0;
 	
 	// If old key is not null, we need to insert all the old shit into the free slot.
@@ -144,17 +144,17 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
 	}
 	
 	// Copy pairs 43 - 85 to the beginning of the new node's buffer
-    memmove(sibling.buffer, this.buffer+bytePos_midPlus1Pair, remBytes);
+    memmove(sibling.buffer, buffer+bytePos_midPlus1Pair, remBytes);
 	// Set the new nodes sibling pointer to old nodes sibling pointer 
-    memmove(sibling.buffer+trueBufferSize, this.buffer+trueBufferSize, sizeof(PageId)); // last 4 bytes of the new nodes buffer is set to the last 4 bytes of the old nodes buffer
+    memmove(sibling.buffer+trueBufferSize, buffer+trueBufferSize, sizeof(PageId)); // last 4 bytes of the new nodes buffer is set to the last 4 bytes of the old nodes buffer
 	// Set the old node's buffer from the 43rd node to the end as "empty" (e.g. -1)
     memset(buffer+bytePos_midPlus1Pair, -1, remBytes);
 	// Set the old nodes sibling pointer to new node
-	buffer[1023] = &sibling; 
+	buffer[1023] = &sibling;
 	
 	// Insert new pair 
 	if(inOld){
-		this.insert(key, rid);
+		insert(key, rid);
 	}
 	else{
 		sibling.insert(key, rid);
