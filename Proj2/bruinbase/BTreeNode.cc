@@ -3,13 +3,23 @@
 using namespace std;
 
 /*
+ * Constructor to set buffer to a state we can check if unused
+ */
+BTLeafNode::BTLeafNode()
+{
+    memset(buffer, -1, PageFile::PAGE_SIZE);
+}
+
+/*
  * Read the content of the node from the page pid in the PageFile pf.
  * @param pid[IN] the PageId to read
  * @param pf[IN] PageFile to read from
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::read(PageId pid, const PageFile& pf)
-{ return 0; }
+{ 
+    return pf.read(pid, buffer);
+}
     
 /*
  * Write the content of the node to the page pid in the PageFile pf.
@@ -18,14 +28,32 @@ RC BTLeafNode::read(PageId pid, const PageFile& pf)
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTLeafNode::write(PageId pid, PageFile& pf)
-{ return 0; }
+{ 
+    return pf.write(pid, buffer);
+}
 
 /*
  * Return the number of keys stored in the node.
  * @return the number of keys in the node
  */
 int BTLeafNode::getKeyCount()
-{ return 0; }
+{ 
+    int count = 0;
+    // Need to index and iterate through buffer using int sizes
+    int* bufferInts = (int *) buffer;
+    // Calculate the increment in integer size to get to next pair
+    int pairIncr = leafNode_pairSize/sizeof(int);
+    for(int pairIndex = 0; pairIndex < leafNode_tupleLimit * pairIncr; pairIndex += pairIncr)
+    {
+        /* Detect when buffer becomes unused */
+        if(buffer[pairIndex] == -1)
+            break;
+        else
+            count += 1;
+    }
+    
+    return count;
+}
 
 /*
  * Insert a (key, rid) pair to the node.
@@ -34,7 +62,50 @@ int BTLeafNode::getKeyCount()
  * @return 0 if successful. Return an error code if the node is full.
  */
 RC BTLeafNode::insert(int key, const RecordId& rid)
-{ return 0; }
+{ 
+	// Get an int buffer because its easier to work with
+    int* bufferInts = (int *) buffer;
+	
+	// Check if node is full
+	if(bufferInts[85*3-2] != -1)
+		return RC_NODE_FULL;
+	
+	// Find first free space in Node to insert pair and find slot to insert new key
+	int free_slot = 0;
+	int pageID = rid.pid;
+	int slotID = rid.sid;
+	int old_pageID = null;
+	int old_slotID = null;
+	int old_key = null;
+	for(free_slot; free_slot < 255; free_slot+=3){
+		if(bufferInts[free_slot] == -1)
+			break;
+		// Key values, if greater than our key, then thats the slot for our new key, repeat process for old pair
+		if(bufferInts[free_slot+2] > key)
+		{
+			old_pageID = bufferInts[free_slot];
+			old_slotID = bufferInts[free_slot+1]; 
+			old_key = bufferInts[free_slot + 2];
+			bufferInts[free_slot] = pageID;
+			bufferInts[free_slot+1] = slotID;
+			bufferInts[free_slot+2] = key;
+			key = old_key;
+			pageID = old_pageID;
+			slotID = old_slotID;
+		}
+	}
+	
+	// Have combed through all used slots
+	if(old_key == null) // If old key is null, that means we didn't replace any old nodes and just inserted.
+		return 0;
+	
+	// If old key is not null, we need to insert all the old shit into the free slot.
+	bufferInts[free_slot] = old_pageID;
+	bufferInts[free_slot+1] = old_slotID;
+	bufferInts[free_slot+2] = old_key;
+	
+	return 0;
+}
 
 /*
  * Insert the (key, rid) pair to the node
@@ -88,6 +159,9 @@ PageId BTLeafNode::getNextNodePtr()
  */
 RC BTLeafNode::setNextNodePtr(PageId pid)
 { return 0; }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
  * Read the content of the node from the page pid in the PageFile pf.
