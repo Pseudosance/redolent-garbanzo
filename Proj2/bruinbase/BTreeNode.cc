@@ -217,7 +217,7 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
     // Get an int buffer because its easier to work with
     int* bufferInts = (int *) buffer;
     // Adjust index entry to be for integer array
-    eid_intBuffer = eid/4;
+    int eid_intBuffer = eid/4;
     
     rid.pid = bufferInts[eid_intBuffer];
     rid.sid = bufferInts[eid_intBuffer+1];
@@ -321,37 +321,41 @@ int BTNonLeafNode::getKeyCount() {
  */
 RC BTNonLeafNode::insert(int key, PageId pid) {
     
-//    // Get an int buffer because its easier to work with
-//    int* bufferInts = (int *) buffer;
-//    
-//    // Check if node is full
-//    if(bufferInts[nonLeafNode_keyLimit*2-2] != -1)      // is -2 correct?
-//        return RC_NODE_FULL;
-//    
-//    // Find first free space in Node to insert pair and find slot to insert new key
-//    int free_slot;
-//    int pageID = pid;
-//    int old_pageID = NULL;
-//    int old_key = NULL;
-//    
-//    for(free_slot=0; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=3){
-//        if(bufferInts[free_slot] == -1)
-//            break;
-//        // Key values, if greater than our key, then thats the slot for our new key, repeat process for old pair
-//        if(bufferInts[free_slot+2] > key)
-//        {
-//            old_pageID = bufferInts[free_slot];
-//            old_slotID = bufferInts[free_slot+1];
-//            old_key = bufferInts[free_slot + 2];
-//            bufferInts[free_slot] = pageID;
-//            bufferInts[free_slot+1] = slotID;
-//            bufferInts[free_slot+2] = key;
-//            key = old_key;
-//            pageID = old_pageID;
-//            slotID = old_slotID;
-//        }
-//    }
+    // Get an int buffer because its easier to work with
+    int* bufferInts = (int *) buffer;
     
+    // Check if node is full
+    if(bufferInts[nonLeafNode_keyLimit*2-2] != -1)      // is -2 correct?
+        return RC_NODE_FULL;
+    
+    // Find first free space in Node to insert pair and find slot to insert new key
+    int free_slot;
+    int pageID = pid;
+    int old_pageID = NULL;
+    int old_key = NULL;
+    
+    for (free_slot = 0; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=2) {
+        if (bufferInts[free_slot] == -1)
+            break;
+        // Key values, if greater than our key, then that's the slot for our new key, repeat process for old pair
+        if (bufferInts[free_slot+1] > key)      // this is 1, right?
+        {
+            old_pageID = bufferInts[free_slot];
+            old_key = bufferInts[free_slot + 1];        // this is 1, right?
+            bufferInts[free_slot] = pageID;
+            bufferInts[free_slot+1] = key;
+            key = old_key;
+            pageID = old_pageID;
+        }
+    }
+    
+    // Have combed through all used slots
+    if (old_key == NULL) // If old key is null, that means we didn't replace any old nodes and just inserted.
+        return 0;
+    
+    // If old key is not null, we need to insert all the old shit into the free slot.
+    bufferInts[free_slot] = old_pageID;
+    bufferInts[free_slot+1] = old_key;
     
     return 0;
 }
@@ -366,8 +370,51 @@ RC BTNonLeafNode::insert(int key, PageId pid) {
  * @param midKey[OUT] the key in the middle after the split. This key should be inserted to the parent node.
  * @return 0 if successful. Return an error code if there is an error.
  */
-RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, int& midKey)
-{ return 0; }
+RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, int& midKey) {
+    
+    // Check if sibling provided is empty, if not, then error
+    if(sibling.getKeyCount() != 0){
+        return RC_NODE_FULL;
+    }
+    
+    // Get an int buffer because it's easier to work with
+    int* bufferInts = (int *) buffer;
+    // Find where to split at, non-leaf node holds 127 pairs, put 64 in left node and 63 in right (Value for bufferInts)
+    int split_at = 64*2; // 0-63 = 64 in left, position in bufferInts is 128 (start of 64th pair)
+    // Middle byte pos of middle + 1 pair in buffer
+    int bytePos_midPlus1Pair = split_at * sizeof(int); // 128 * 4 = 512 (value for buffer)
+    // size of buffer available to use after saving end for the sibling pointer
+    int trueBufferSize = PageFile::PAGE_SIZE - sizeof(PageId); // 1024 - 4 = 1020
+    // Remaining bytes in buffer (1024 - 4 - 512) = 508
+    int remBytes = trueBufferSize - bytePos_midPlus1Pair;
+    
+    // Determine if new pair should go into old node or new node (Compare new pair to the split at -1)
+    bool inOld = true;
+    if(bufferInts[split_at-1] < key) // key is greater than middle, it goes into new node
+    {
+        inOld = false;
+    }
+    
+    // Copy pairs 64 - 127 to the beginning of the new node's buffer
+    memmove(sibling.buffer, buffer+bytePos_midPlus1Pair, remBytes);
+    // Set the new node's sibling pointer to old node's sibling pointer
+    memmove(sibling.buffer+trueBufferSize, buffer+trueBufferSize, sizeof(PageId)); // last 4 bytes of the new node's buffer is set to the last 4 bytes of the old node's buffer
+    // Set the old node's buffer from the 64th node to the end as "empty" (e.g. -1)
+    memset(buffer+bytePos_midPlus1Pair, -1, remBytes);
+    // Set the old nodes sibling pointer to new node
+    buffer[1023] = &sibling;
+    
+    // Insert new pair
+    if(inOld){
+        insert(key, pid);
+    }
+    else{
+        insert(key, pid);
+    }
+    
+    midKey = sibling.buffer[2];
+    return 0;
+}
 
 /*
  * Given the searchKey, find the child-node pointer to follow and
