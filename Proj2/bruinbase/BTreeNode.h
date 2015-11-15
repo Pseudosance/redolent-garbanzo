@@ -23,7 +23,7 @@ const int leafNode_tupleLimit = (PageFile::PAGE_SIZE - sizeof(PageId))/leafNode_
 // size of the (PageId, key) pairs
 const int nonLeafNode_pairSize = sizeof(PageId) + sizeof(int);
 // the number of how many (PageId, key) pairs can fit in a node
-const int nonLeafNode_keyLimit = (PageFile::PAGE_SIZE - sizeof(PageId))/nonLeafNode_pairSize;
+const int nonLeafNode_keyLimit = (PageFile::PAGE_SIZE - sizeof(PageId))/nonLeafNode_pairSize;   //127
 
 /**
  * BTLeafNode: The class representing a B+tree leaf node.

@@ -71,13 +71,13 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 		return RC_NODE_FULL;
 	
 	// Find first free space in Node to insert pair and find slot to insert new key
-	int free_slot = 0;
+	int free_slot;
 	int pageID = rid.pid;
 	int slotID = rid.sid;
 	int old_pageID = NULL;
 	int old_slotID = NULL;
 	int old_key = NULL;
-	for(free_slot; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=3){
+	for(free_slot = 0; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=3){
 		if(bufferInts[free_slot] == -1)
 			break;
 		// Key values, if greater than our key, then thats the slot for our new key, repeat process for old pair
@@ -182,8 +182,8 @@ RC BTLeafNode::locate(int searchKey, int& eid)
     
     // iterate through the node looking for the searchKey.
         // TODO: Change to binary search for improved performance, it is hinted we should do so because the nodes are always sorted.
-    int location = 0;
-    for(location; location < 255 && bufferInts[location] != -1; location+=3){
+    int location;
+    for(location = 0; location < 255 && bufferInts[location] != -1; location+=3){
         int key_pos = location+2;
         if(bufferInts[key_pos] == searchKey)
         {
@@ -319,8 +319,42 @@ int BTNonLeafNode::getKeyCount() {
  * @param pid[IN] the PageId to insert
  * @return 0 if successful. Return an error code if the node is full.
  */
-RC BTNonLeafNode::insert(int key, PageId pid)
-{ return 0; }
+RC BTNonLeafNode::insert(int key, PageId pid) {
+    
+//    // Get an int buffer because its easier to work with
+//    int* bufferInts = (int *) buffer;
+//    
+//    // Check if node is full
+//    if(bufferInts[nonLeafNode_keyLimit*2-2] != -1)      // is -2 correct?
+//        return RC_NODE_FULL;
+//    
+//    // Find first free space in Node to insert pair and find slot to insert new key
+//    int free_slot;
+//    int pageID = pid;
+//    int old_pageID = NULL;
+//    int old_key = NULL;
+//    
+//    for(free_slot=0; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=3){
+//        if(bufferInts[free_slot] == -1)
+//            break;
+//        // Key values, if greater than our key, then thats the slot for our new key, repeat process for old pair
+//        if(bufferInts[free_slot+2] > key)
+//        {
+//            old_pageID = bufferInts[free_slot];
+//            old_slotID = bufferInts[free_slot+1];
+//            old_key = bufferInts[free_slot + 2];
+//            bufferInts[free_slot] = pageID;
+//            bufferInts[free_slot+1] = slotID;
+//            bufferInts[free_slot+2] = key;
+//            key = old_key;
+//            pageID = old_pageID;
+//            slotID = old_slotID;
+//        }
+//    }
+    
+    
+    return 0;
+}
 
 /*
  * Insert the (key, pid) pair to the node
