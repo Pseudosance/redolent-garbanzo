@@ -1,4 +1,6 @@
 #include "BTreeNode.h"
+#include <stdio.h>
+#include <string.h>
 
 using namespace std;
 
@@ -150,7 +152,8 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
 	// Set the old node's buffer from the 43rd node to the end as "empty" (e.g. -1)
     memset(buffer+bytePos_midPlus1Pair, -1, remBytes);
 	// Set the old nodes sibling pointer to new node
-	buffer[1023] = &sibling;
+    //setNextNodePtr(sibling);
+	bufferInts[255] = (PageId) &sibling;
 	
 	// Insert new pair 
 	if(inOld){
@@ -232,10 +235,11 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
  */
 PageId BTLeafNode::getNextNodePtr()
 { 
-   // Get an int buffer because its easier to work with
+    // Get an int buffer because its easier to work with
     int* bufferInts = (int *) buffer;
-    
-    return bufferInts[PageFile::PAGE_SIZE-1];
+    int siblingPtr = bufferInts[255];
+    return siblingPtr;
+    //return bufferInts[PageFile::PAGE_SIZE-1];
 }
 
 /*
@@ -247,7 +251,7 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
 { 
     // Get an int buffer because its easier to work with
     int* bufferInts = (int *) buffer;
-    bufferInts[PageFile::PAGE_SIZE-1] = pid;
+    bufferInts[255] = pid;
     return 0; 
 }
 
@@ -402,7 +406,8 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     // Set the old node's buffer from the 64th node to the end as "empty" (e.g. -1)
     memset(buffer+bytePos_midPlus1Pair, -1, remBytes);
     // Set the old nodes sibling pointer to new node
-    buffer[1023] = &sibling;
+   // memset(buffer+1020, )
+    bufferInts[255] = (PageId) &sibling;
     
     // Insert new pair
     if(inOld){
