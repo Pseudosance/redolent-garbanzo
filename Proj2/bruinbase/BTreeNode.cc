@@ -78,7 +78,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 	int slotID = rid.sid;
 	int old_pageID = -1;
 	int old_slotID = -1;
-	int old_key;
+	int old_key = 0;    // should be 0?
 	for(free_slot = 0; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=3){
 		if(bufferInts[free_slot] == -1)
 			break;

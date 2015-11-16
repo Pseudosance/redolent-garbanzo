@@ -6,7 +6,7 @@
  * @author Junghoo "John" Cho <cho AT cs.ucla.edu>
  * @date 3/24/2008
  */
- 
+
 #include "BTreeIndex.h"
 #include "BTreeNode.h"
 
@@ -29,36 +29,7 @@ BTreeIndex::BTreeIndex()
  */
 RC BTreeIndex::open(const string& indexname, char mode)
 {
-    
-    char buffer[PageFile::PAGE_SIZE]; //buffer to read index into
-    
-    RC rc = pf.open(indexname, mode);
-    
-    // as specified by spec: "error code. 0 if no error"...could not open
-    if (rc != 0) {
-        return RC_FILE_OPEN_FAILED;
-    }
-    
-    // endPid() returns the id of the last page in the file (+ 1)
-    
-    // thus, if it's 0, then there are no pages in the file.
-    
-    if (pf.endPid() == 0) {
-        treeHeight = 0;
-        rootPid = -1;
-        close();
-        return open(indexname, mode);
-    }
-    
-    else {
-        if (pf.read(0, buffer) != 0) {      // failed to read
-            return RC_FILE_READ_FAILED;
-        }
-        memcpy(&treeHeight, buffer, sizeof(int));
-        memcpy(&rootPid, buffer + sizeof(int), sizeof(PageId));
-    }
-    
-    return 0;   // no errors
+    return 0;
 }
 
 /*
@@ -101,35 +72,6 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
  */
 RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 {
-    BTLeafNode leafNode;        // calls constructor
-    BTNonLeafNode nonLeafNode;  // calls constructor
-    
-    if (rootPid == -1 || treeHeight == 0){
-        return RC_FILE_SEEK_FAILED;     // tree is empty
-    }
-    
-    PageId pid = rootPid;
-    
-    for (int i = 0; i < treeHeight - 1; i++) {      // will take you to leaf node
-        nonLeafNode.read(pid, pf);                  // reads the pid into the nonLeafNode
-        nonLeafNode.locateChildPtr(searchKey, pid);
-    }
-    
-    // pid now has the pid of the leaf node we are trying to locate
-    
-    if (leafNode.read(pid, pf) != 0) {  // read pid into leaf node
-        return RC_FILE_READ_FAILED;
-    }
-    
-    int eid = -1;
-    
-    if (leafNode.locate(searchKey, eid) != 0) {
-        return RC_FILE_SEEK_FAILED;
-    }
-    
-    cursor.pid = pid;
-    cursor.eid = eid;
-    
     return 0;
 }
 
