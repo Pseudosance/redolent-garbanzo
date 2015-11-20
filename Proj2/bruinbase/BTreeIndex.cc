@@ -67,7 +67,13 @@ RC BTreeIndex::open(const string& indexname, char mode)
  */
 RC BTreeIndex::close()
 {
-    return 0;
+    // Before the file closes, need to save the rootPid and treeHeight variables onto disk
+    int treeData[(PageFile::PAGE_SIZE/sizeof(int))]; // TODO: Despite having a buffer size of 256, I really only need the first 2 slots. However, have to write to entire page file?
+    treeData[0] = rootPid;
+    treeData[1] = treeHeight;
+    pf.write(0, treeData);
+    
+    return pf.close();
 }
 
 /*
