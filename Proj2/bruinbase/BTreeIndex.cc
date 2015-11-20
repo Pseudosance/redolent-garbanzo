@@ -29,6 +29,35 @@ BTreeIndex::BTreeIndex()
  */
 RC BTreeIndex::open(const string& indexname, char mode)
 {
+    RC     rc;
+  // open the index file 
+  if ((rc = pf.open(indexname, mode)) < 0) { 
+    fprintf(stderr, "Error: Failed to open index file %s \n", indexname.c_str());
+    return rc;
+  }
+    
+  // if page file opened is empty (empty tree)
+  if(!pf.endPid()){
+      // Init the tree vars (necessary because could use same BTreeIndex instance to close and open a new page)
+      treeHeight = 0;
+      rootPid = -1;
+      //return 0;
+      // Need to preserve height and root pid so it still exists between BruinBase uses
+        // Really, only on close....
+  }
+  else{
+      // Buffer to read page file into in order to determine root pid and tree height
+      int treeData[(PageFile::PAGE_SIZE/sizeof(int))]; // TODO: Despite having a buffer size of 256, I really only need the first 2 slots. However, have to read in entire page file?
+      
+      // Read into treeData 
+      if ((rc = pf.read(0, treeData)) < 0) { 
+          fprintf(stderr, "Error: Failed to read the pagefile into buffer\n");
+          return rc;
+      }
+      rootPid = treeData[0];
+      treeHeight = treeData[1];
+  }
+  
     return 0;
 }
 
