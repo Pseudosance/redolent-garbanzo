@@ -117,8 +117,33 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
  * @param key[OUT] the key stored at the index cursor location.
  * @param rid[OUT] the RecordId stored at the index cursor location.
  * @return error code. 0 if no error
- */
+ */ 
+                            //  (pid, eid)         key   (pageid, slotid)
 RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 {
+    RC rc;
+    BTLeafNode node;
+    // Read pair
+    if ((rc = node.read(cursor.pid, pf)) < 0) { 
+          fprintf(stderr, "Error: Failed to read get node data\n");
+          return rc;
+    }
+    if ((rc = node.readEntry(cursor.eid, key, rid)) < 0) { 
+          fprintf(stderr, "Error: Failed to read tuple data\n");
+          return rc;
+    }
+    
+    // Move forward cursor (the way I set up eid use in Node was that each eid was a byte of the buffer, so 12 bytes = 3 ints  which is 1 entry)
+        // Check if pid, eid was last entry in node, if so get next node and change the pid and eid of cursor
+        if(((cursor.eid + 12)/12) >= node.getKeyCount())
+        {
+            cursor.pid = node.getNextNodePtr();
+            cursor.eid = 0;
+        }
+        // else increment eid by 12 
+        else{
+            cursor.eid += 12;
+        }
+        
     return 0;
 }
