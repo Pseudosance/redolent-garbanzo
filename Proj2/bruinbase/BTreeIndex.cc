@@ -84,6 +84,27 @@ RC BTreeIndex::close()
  */
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
+    RC rc = 0;
+    // first handle the simpler case where the tree is empty
+    
+    if (treeHeight == 0) {
+        BTLeafNode leafNode;
+        rc = leafNode.insert(key, rid);
+        if (rc < 0) {
+            return rc;
+        }
+        rootPid = pf.endPid();
+        rc = leafNode.write(rootPid, pf);
+        if (rc < 0) {
+            return rc;
+        }
+        treeHeight = treeHeight + 1;
+    }
+    else {  // tree is NOT EMPTY...therefore need recursion
+        // TODO
+    }
+    
+    
     return 0;
 }
 
