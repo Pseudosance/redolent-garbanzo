@@ -414,7 +414,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
         insert(key, pid);
     }
     else{
-        insert(key, pid);
+        sibling.insert(key, pid);
     }
     
     midKey = sibling.buffer[2];

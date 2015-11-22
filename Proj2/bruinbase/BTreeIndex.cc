@@ -112,7 +112,7 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
            BTLeafNode newSiblingLeaf;
            if((rc = leafNode.insertAndSplit(key, rid, newSiblingLeaf, newKey)) != 0)
            {
-               fprintf(stderr, "Error: Insert and Split failed\n");
+               fprintf(stderr, "Error: Insert and Split on leaf failed\n");
                return rc;
            }
            newNode = pf.endPid();
@@ -134,21 +134,36 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
         fprintf(stderr, "Error: locate child ptr failed\n");
         return rc;
     }
-    rc = recursiveInsert(key, rid, nextNode, height-1, -1, NULL);
+    rc = recursiveInsert(key, rid, nextNode, height-1, -1, -1);
     
     // We are on the way back up now
     // Check if newNode and newKey are set (meaning we returned from a split action)
-    if(newNode != -1 && newKey != NULL){
+    if(newNode != -1){
         // Since not null, we needa insert newNode(pageId) and newKey into the currentNode
-        
-        // if we needa split the nonLeafNode
+        if(node.insert(newKey, newNode) != 0){
+            // if we needa split the nonLeafNode
+            BTNonLeafNode newSiblingNode;
+            if((rc = node.insertAndSplit(newKey, newNode, newSiblingNode, newKey)) != 0)
+            {
+                fprintf(stderr, "Error: Insert and Split on nonLeaf failed\n");
+                return rc;
+            }
+            newNode = pf.endPid();
+            rc = newSiblingNode.write(newNode, pf);
+            
             // Note Special Case: If height == treeHeight and we need to split, then need a new root node (special because a return from here will exit recursiveInsert and thus loose the newNode and newKey values)
-                // code to handle this case //
-            // Else if height != treeHeight, then Set newNode and newKey values so next level up inserts 
-                // Set newNode and newKey values //
-        // else If node doesn't split, we should reset these parameters to null
+            if(treeHeight == height && currentNode == rootPid){
+                BTNonLeafNode rootNode; 
+                rc = rootNode.initializeRoot(rootPid, newKey, newNode);
+                rootPid = pf.endPid();
+                rc = rootNode.write(rootPid, pf);
+            }
+            
+            return rc;                
+        }
+        else{ // else If node doesn't split, we should reset these parameters to null
             newNode = -1;
-            newKey = NULL;
+        }
     }
     
     return rc;   
@@ -167,7 +182,7 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
     RC rc = 0;
     
     if(treeHeight > 0){ // Tree is not empty, need to recursively work our way to appropriate leaf node
-        return recursiveInsert(key, rid, rootPid,treeHeight, -1, NULL);
+        return recursiveInsert(key, rid, rootPid,treeHeight, -1, -1);
     }
     else if (treeHeight == 0) { // Tree is empty, so insert root....
         return insertOnEmptyTree(key, rid);
