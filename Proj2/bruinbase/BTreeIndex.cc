@@ -99,7 +99,8 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
     
     // Base case when height = 0 (e.g. at leaf node)
     if(height == 0){
-        BTLeafNode leafNode.read(currentNode, pf);
+        BTLeafNode leafNode;
+        leafNode.read(currentNode, pf);
         // Check if room for node, if so, insert
         if(leafNode.insert(key, rid) != 0){
             // If fails, (e.g. in this if statement it failed), need to split
@@ -126,11 +127,18 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
     // If height is > 0, then recursively go down correctly.
     PageId nextNode; 
     // Determine nextNode... //
-    rc = recursiveInsert(key, rid, nextNode, height -1, NULL, NULL);
+    BTNonLeafNode node;
+    node.read(currentNode, pf);
+    if((rc = node.locateChildPtr(key, nextNode)) != 0)
+    {
+        fprintf(stderr, "Error: locate child ptr failed\n");
+        return rc;
+    }
+    rc = recursiveInsert(key, rid, nextNode, height-1, -1, NULL);
     
     // We are on the way back up now
     // Check if newNode and newKey are set (meaning we returned from a split action)
-    if(newNode != NULL && newKey != NULL){
+    if(newNode != -1 && newKey != NULL){
         // Since not null, we needa insert newNode(pageId) and newKey into the currentNode
         
         // if we needa split the nonLeafNode
@@ -139,7 +147,7 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
             // Else if height != treeHeight, then Set newNode and newKey values so next level up inserts 
                 // Set newNode and newKey values //
         // else If node doesn't split, we should reset these parameters to null
-            newNode = NULL;
+            newNode = -1;
             newKey = NULL;
     }
     
@@ -159,7 +167,7 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
     RC rc = 0;
     
     if(treeHeight > 0){ // Tree is not empty, need to recursively work our way to appropriate leaf node
-        return recursiveInsert(key, rid, rootPid,treeHeight, NULL, NULL);
+        return recursiveInsert(key, rid, rootPid,treeHeight, -1, NULL);
     }
     else if (treeHeight == 0) { // Tree is empty, so insert root....
         return insertOnEmptyTree(key, rid);
