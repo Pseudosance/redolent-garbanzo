@@ -58,9 +58,11 @@ class BTreeIndex {
     * @param rid[IN] the RecordId for the record being inserted into the index
     * @param currentNode[IN] the pageId of the node we are currently looking at to determine the way to the appropriate leaf
     * @param height[IN] the height of the tree from currentNode's perspective (when height == 0 we have reached the appropriate leafNode)
+    * @param newNode[OUT] the pageId of a new node resulting from a split
+    * @param newKey[OUT] the key value of the first key in the newNode that resulted from a split
     * @return error code. 0 if no error
     */
-   RC recursiveInsert(int key, const RecordId& rid, PageId currentNode, int height);
+   RC recursiveInsert(int key, const RecordId& rid, PageId currentNode, int height, PageId& newNode, int& newKey);
    
    /**
     * Insert (key, RecordId) pair to an index when the tree is empty (treeHeight == 0)
