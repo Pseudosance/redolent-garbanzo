@@ -153,7 +153,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
     memset(buffer+bytePos_midPlus1Pair, -1, remBytes);
 	// Set the old nodes sibling pointer to new node
     //setNextNodePtr(sibling);
-	bufferInts[255] = (PageId) &sibling;
+	bufferInts[255] = *(PageId*) &sibling;          // CHANGED FROM ORIGINAL!!!!!!
 	
 	// Insert new pair 
 	if(inOld){
@@ -407,14 +407,14 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     memset(buffer+bytePos_midPlus1Pair, -1, remBytes);
     // Set the old nodes sibling pointer to new node
    // memset(buffer+1020, )
-    bufferInts[255] = (PageId) &sibling;
+    bufferInts[255] = *(PageId*) &sibling;              // CHANGED FROM ORIGINAL!!!!!
     
     // Insert new pair
     if(inOld){
         insert(key, pid);
     }
     else{
-        insert(key, pid);
+        sibling.insert(key, pid);
     }
     
     midKey = sibling.buffer[2];
