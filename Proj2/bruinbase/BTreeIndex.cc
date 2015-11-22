@@ -79,6 +79,7 @@ RC BTreeIndex::close()
 // Recommended to use recursion 
 //////////////////////////////////////// INSERT HELPERS ////////////////////////////////////////////////////////////
 RC BTreeIndex::insertOnEmptyTree(int key, const RecordId& rid){
+        RC rc = 0;
         BTLeafNode leafNode;
         rc = leafNode.insert(key, rid);
         if (rc < 0) {
@@ -96,10 +97,11 @@ RC BTreeIndex::insertOnEmptyTree(int key, const RecordId& rid){
 RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode, int height, PageId& newNode, int& newKey){
     
     RC rc; // Return value
+    BTLeafNode leafNode;
     
     // Base case when height = 0 (e.g. at leaf node)
     if(height == 0){
-        BTLeafNode leafNode.read(currentNode, pf);
+        leafNode.read(currentNode, pf);
         // Check if room for node, if so, insert
         if(leafNode.insert(key, rid) != 0){
             // If fails, (e.g. in this if statement it failed), need to split
@@ -119,14 +121,18 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
 
         }
         // Write to node
-        return leafNode.write(pid,pf);      
+        return leafNode.write(currentNode,pf);      // **** CHECK: changed pid to "currentNode"
+        
     }
     
     
     // If height is > 0, then recursively go down correctly.
     PageId nextNode; 
     // Determine nextNode... //
-    rc = recursiveInsert(key, rid, nextNode, height -1, NULL, NULL);
+    
+    int parameterNode = (PageId) -1;
+    
+    rc = recursiveInsert(key, rid, nextNode, height -1, parameterNode, NULL);
     
     // We are on the way back up now
     // Check if newNode and newKey are set (meaning we returned from a split action)
