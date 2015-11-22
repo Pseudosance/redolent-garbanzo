@@ -49,6 +49,27 @@ class BTreeIndex {
    * @return error code. 0 if no error
    */
   RC close();
+   
+   
+   ////////////////////////////////  Helper Functions for Insert /////////////////////////////////////
+   /**
+    * Recursively work ones way down to the appropriate leaf to insert the (key, RecordId) pair when the treeHeight > 0
+    * @param key[IN] the key for the value inserted into the index
+    * @param rid[IN] the RecordId for the record being inserted into the index
+    * @param currentNode[IN] the pageId of the node we are currently looking at to determine the way to the appropriate leaf
+    * @param height[IN] the height of the tree from currentNode's perspective (when height == 0 we have reached the appropriate leafNode)
+    * @return error code. 0 if no error
+    */
+   RC recursiveInsert(int key, const RecordId& rid, PageId currentNode, int height);
+   
+   /**
+    * Insert (key, RecordId) pair to an index when the tree is empty (treeHeight == 0)
+    * @param key[IN] the key for the value inserted into the index
+    * @param rid[IN] the RecordId for the record being inserted into the index
+    * @return error code. 0 if no error
+    */
+   RC insertOnEmptyTree(int key, const RecordId& rid);
+   ///////////////////////////////////////////////////////////////////////////////////////////////////
     
   /**
    * Insert (key, RecordId) pair to the index.

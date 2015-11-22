@@ -40,7 +40,7 @@ RC BTreeIndex::open(const string& indexname, char mode)
   if(!pf.endPid()){
       // Init the tree vars (necessary because could use same BTreeIndex instance to close and open a new page)
       treeHeight = 0;
-      rootPid = -1;
+      rootPid = 0;
       //return 0;
       // Need to preserve height and root pid so it still exists between BruinBase uses
         // Really, only on close....
@@ -78,18 +78,7 @@ RC BTreeIndex::close()
 
 // Recommended to use recursion 
 
-/*
- * Insert (key, RecordId) pair to the index.
- * @param key[IN] the key for the value inserted into the index
- * @param rid[IN] the RecordId for the record being inserted into the index
- * @return error code. 0 if no error
- */
-RC BTreeIndex::insert(int key, const RecordId& rid)
-{
-    RC rc = 0;
-    // first handle the simpler case where the tree is empty
-    
-    if (treeHeight == 0) {
+RC BTreeIndex::insertOnEmptyTree(int key, const RecordId& rid){
         BTLeafNode leafNode;
         rc = leafNode.insert(key, rid);
         if (rc < 0) {
@@ -101,11 +90,47 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
             return rc;
         }
         treeHeight = treeHeight + 1;
-    }
-    else {  // tree is NOT EMPTY...therefore need recursion
-        // TODO
+        return 0;
+}
+
+RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode, int height){
+    // Base case when height = 0 (e.g. at leaf node)
+    if(height == 0){
+        BTLeafNode leafNode.read(currentNode, pf);
+        // Check if room for node, if so, insert
+        if(leafNode.insert(key, rid) != 0){
+            // If fails, (e.g. in this if statement it failed), need to split
+                // If split that means need to insert new key and page ID into a nonleaf
+           
+        }
+        // Write to node
+        return leafNode.write(pid,pf);      
     }
     
+    // height > 0, then need to recurse way day appropriately
+    // Find appropriate node to continue down
+    PageId nextNode;
+    // Determine nextNode...
+    
+    return recursiveInsert(key, rid, nextNode, height -1);
+}
+
+/*
+ * Insert (key, RecordId) pair to the index.
+ * @param key[IN] the key for the value inserted into the index
+ * @param rid[IN] the RecordId for the record being inserted into the index
+ * @return error code. 0 if no error
+ */
+RC BTreeIndex::insert(int key, const RecordId& rid)
+{
+    RC rc = 0;
+    
+    if(treeHeight > 0){ // Tree is not empty, need to recursively work our way to appropriate leaf node
+        return recursiveInsert(key, rid, rootPid,treeHeight);
+    }
+    else if (treeHeight == 0) { // Tree is empty, so insert root....
+        return insertOnEmptyTree(key, rid);
+    }    
     
     return 0;
 }
