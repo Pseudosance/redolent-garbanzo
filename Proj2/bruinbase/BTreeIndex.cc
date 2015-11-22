@@ -76,6 +76,8 @@ RC BTreeIndex::close()
     return pf.close();
 }
 
+// Recommended to use recursion 
+
 /*
  * Insert (key, RecordId) pair to the index.
  * @param key[IN] the key for the value inserted into the index
