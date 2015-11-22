@@ -80,7 +80,7 @@ RC BTreeIndex::close()
 // Recommended to use recursion 
 //////////////////////////////////////// INSERT HELPERS ////////////////////////////////////////////////////////////
 RC BTreeIndex::insertOnEmptyTree(int key, const RecordId& rid){
-        RC rc = 0;
+        RC rc;
         BTLeafNode leafNode;
         rc = leafNode.insert(key, rid);
         if (rc < 0) {
@@ -124,7 +124,7 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
         }
         // Write to node
         return leafNode.write(currentNode,pf);      // **** CHECK: changed pid to "currentNode"
-        
+
     }
     
     
@@ -143,7 +143,8 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
         fprintf(stderr, "Error: locate child ptr failed\n");
         return rc;
     }
-    rc = recursiveInsert(key, rid, nextNode, height-1, parameterNode, parameterNode);
+
+    rc = recursiveInsert(key, rid, nextNode, height-1, newNode, newKey);
     
     // We are on the way back up now
     // Check if newNode and newKey are set (meaning we returned from a split action)
@@ -173,11 +174,14 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
         else{ // else If node doesn't split, we should reset these parameters to null
             newNode = -1;
         }
+        
+        rc = node.write(currentNode, pf);
     }
     
     return rc;   
 
 }
+  
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -193,7 +197,9 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
     int parameterNode = (PageId) -1;
 
     if(treeHeight > 0){ // Tree is not empty, need to recursively work our way to appropriate leaf node
-        return recursiveInsert(key, rid, rootPid,treeHeight, parameterNode, parameterNode);
+        PageId newNode = -1;
+        int newKey = -1;
+        return recursiveInsert(key, rid, rootPid,treeHeight, newNode, newKey);
     }
     else if (treeHeight == 0) { // Tree is empty, so insert root....
         return insertOnEmptyTree(key, rid);
