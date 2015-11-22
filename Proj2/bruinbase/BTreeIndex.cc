@@ -86,6 +86,27 @@ RC BTreeIndex::close()
  */
 RC BTreeIndex::insert(int key, const RecordId& rid)
 {
+    RC rc = 0;
+    // first handle the simpler case where the tree is empty
+    
+    if (treeHeight == 0) {
+        BTLeafNode leafNode;
+        rc = leafNode.insert(key, rid);
+        if (rc < 0) {
+            return rc;
+        }
+        rootPid = pf.endPid();
+        rc = leafNode.write(rootPid, pf);
+        if (rc < 0) {
+            return rc;
+        }
+        treeHeight = treeHeight + 1;
+    }
+    else {  // tree is NOT EMPTY...therefore need recursion
+        // TODO
+    }
+    
+    
     return 0;
 }
 
@@ -109,6 +130,44 @@ RC BTreeIndex::insert(int key, const RecordId& rid)
  */
 RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 {
+    RC rc = 0;
+    PageId pid = rootPid;
+    BTNonLeafNode nonLeafNode;
+    BTLeafNode leafNode;
+    
+    if (treeHeight == 0) {
+        return RC_FILE_SEEK_FAILED;
+    }
+    
+    int height;
+    
+    // first, traverse all the non-leaf nodes
+    for (height = 1; height < treeHeight; height++) {
+        rc = nonLeafNode.read(pid, pf);
+        if (rc < 0) {
+            return rc;
+        }
+        rc = nonLeafNode.locateChildPtr(searchKey, pid);
+        if (rc < 0) {
+            return rc;
+        }
+    }
+    
+    // if we've reached this point, we are at the leaf nodes
+    
+    // repeat same code but with leaf node!
+    
+    rc = leafNode.read(pid, pf);
+    if (rc < 0) {
+        return rc;
+    }
+    rc = leafNode.locate(searchKey, cursor.eid);
+    if (rc < 0) {
+        return rc;
+    }
+    
+    cursor.pid = pid;
+    
     return 0;
 }
 
