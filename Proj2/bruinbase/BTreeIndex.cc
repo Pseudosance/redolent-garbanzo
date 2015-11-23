@@ -9,6 +9,7 @@
 
 #include "BTreeIndex.h"
 #include "BTreeNode.h"
+#include <iostream>
 #include <stdio.h>
 
 using namespace std;
@@ -230,6 +231,7 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
 {
     RC rc = 0;
     PageId pid = rootPid;
+    int eid = -1;
     BTNonLeafNode nonLeafNode;
     BTLeafNode leafNode;
     
@@ -242,11 +244,14 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
     // first, traverse all the non-leaf nodes
     for (height = 1; height < treeHeight; height++) {
         rc = nonLeafNode.read(pid, pf);
+        //cout << rc << "is rc" << endl;
         if (rc < 0) {
+            cout << "ZOINKS ! :(" << endl;
             return rc;
         }
         rc = nonLeafNode.locateChildPtr(searchKey, pid);
         if (rc < 0) {
+            cout << "entered the bad zone :(" << endl;
             return rc;
         }
     }
@@ -257,14 +262,20 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
     
     rc = leafNode.read(pid, pf);
     if (rc < 0) {
+        cout << "oh no :(" << endl;
+
         return rc;
     }
-    rc = leafNode.locate(searchKey, cursor.eid);
+
+    rc = leafNode.locate(searchKey, eid);
+
     if (rc < 0) {
+        cout << "NAH :(" << endl;
         return rc;
     }
     
     cursor.pid = pid;
+    cursor.eid = eid;
     
     return 0;
 }
