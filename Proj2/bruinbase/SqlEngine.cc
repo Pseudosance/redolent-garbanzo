@@ -158,7 +158,7 @@ RC SqlEngine::load(const string& table, const string& loadfile, bool index)
   if(index)
   {
     
-    // Do index code later
+    // Do indexy shit later
     
   }
   else{

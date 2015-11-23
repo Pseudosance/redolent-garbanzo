@@ -1,8 +1,8 @@
 #include "BTreeNode.h"
 #include <stdio.h>
 #include <string.h>
+#include <cstdio>
 #include <iostream>
-
 using namespace std;
 
 /*
@@ -41,6 +41,7 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
  */
 int BTLeafNode::getKeyCount()
 { 
+    
     int count = 0;
     cout << "enters getKeyCount()" << endl;
     // Need to index and iterate through buffer using int sizes
@@ -51,7 +52,7 @@ int BTLeafNode::getKeyCount()
     {
         cout << "for loop" << pairIndex << endl;
         /* Detect when buffer becomes unused */
-        if(buffer[pairIndex] == -1)
+        if(bufferInts[pairIndex] == -1)
             break;
         else
             count += 1;
@@ -70,11 +71,13 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 { 
 	// Get an int buffer because its easier to work with
     int* bufferInts = (int *) buffer;
+    //PageId* bufferPageIds = (PageId *) buffer;
 	
 	// Check if node is full
-	if(bufferInts[leafNode_tupleLimit*3-2] != -1)
+	if(bufferInts[leafNode_tupleLimit*3-2] != -1){
 		return RC_NODE_FULL;
-	
+    }
+    
 	// Find first free space in Node to insert pair and find slot to insert new key
 	int free_slot;
 	int pageID = rid.pid;
@@ -83,8 +86,12 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 	int old_slotID = -1;
 	int old_key = 0;    // should be 0?
 	for(free_slot = 0; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=3){
-		if(bufferInts[free_slot] == -1)
+		if(bufferInts[free_slot] == -1){
+            bufferInts[free_slot] = rid.pid;
+            bufferInts[free_slot+1] = rid.sid;
+            bufferInts[free_slot+2] = key;
 			break;
+        }
 		// Key values, if greater than our key, then thats the slot for our new key, repeat process for old pair
 		if(bufferInts[free_slot+2] > key)
 		{
@@ -99,16 +106,16 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 			slotID = old_slotID;
 		}
 	}
-	
+    
 	// Have combed through all used slots
-	if(old_pageID == -1 && old_slotID == -1) // If old key is null, that means we didn't replace any old nodes and just inserted.
-		return 0;
-	
+	if(old_pageID == -1 && old_slotID == -1){ // If old key is null, that means we didn't replace any old nodes and just inserted. 
+        return 0;
+    }
 	// If old key is not null, we need to insert all the old shit into the free slot.
 	bufferInts[free_slot] = old_pageID;
 	bufferInts[free_slot+1] = old_slotID;
 	bufferInts[free_slot+2] = old_key;
-	
+    
 	return 0;
 }
 
@@ -166,7 +173,8 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
 		sibling.insert(key, rid);
 	}
 	
-	siblingKey = sibling.buffer[2];
+    int* siblingBufferInts = (int *) sibling.buffer;
+	siblingKey = siblingBufferInts[2];
 	return 0;
 }
 
@@ -230,8 +238,7 @@ RC BTLeafNode::readEntry(int eid, int& key, RecordId& rid)
     int* bufferInts = (int *) buffer;
     // Adjust index entry to be for integer array
     int eid_intBuffer = eid/4;
-    
-    rid.pid = bufferInts[eid_intBuffer];
+    rid.pid = bufferInts[eid_intBuffer]; 
     rid.sid = bufferInts[eid_intBuffer+1];
     key = bufferInts[eid_intBuffer+2];
     
@@ -348,8 +355,11 @@ RC BTNonLeafNode::insert(int key, PageId pid) {
     int old_key;
     
     for (free_slot = 0; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=2) {
-        if (bufferInts[free_slot] == -1)
+        if (bufferInts[free_slot] == -1) {
+            bufferInts[free_slot] = pid;
+            bufferInts[free_slot+1] = key;
             break;
+        }
         // Key values, if greater than our key, then that's the slot for our new key, repeat process for old pair
         if (bufferInts[free_slot+1] > key)      // this is 1, right?
         {
