@@ -1,6 +1,7 @@
 #include "BTreeNode.h"
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
 
 using namespace std;
 
@@ -41,12 +42,14 @@ RC BTLeafNode::write(PageId pid, PageFile& pf)
 int BTLeafNode::getKeyCount()
 { 
     int count = 0;
+    cout << "enters getKeyCount()" << endl;
     // Need to index and iterate through buffer using int sizes
     int* bufferInts = (int *) buffer;
     // Calculate the increment in integer size to get to next pair
     int pairIncr = leafNode_pairSize/sizeof(int);
     for(int pairIndex = 0; pairIndex < leafNode_tupleLimit * pairIncr; pairIndex += pairIncr)
     {
+        cout << "for loop" << pairIndex << endl;
         /* Detect when buffer becomes unused */
         if(buffer[pairIndex] == -1)
             break;
@@ -183,13 +186,19 @@ RC BTLeafNode::locate(int searchKey, int& eid)
     // Get an int buffer because its easier to work with
     int* bufferInts = (int *) buffer;
     
+    cout << "entersLOCATE" << endl;
+
     // iterate through the node looking for the searchKey.
         // TODO: Change to binary search for improved performance, it is hinted we should do so because the nodes are always sorted.
     int location;
-    for(location = 0; location < 255 && bufferInts[location] != -1; location+=3){
+    for (location = 0; location < 255 && bufferInts[location] != -1; location+=3){
         int key_pos = location+2;
+        
+        cout << location << endl;
+        
         if(bufferInts[key_pos] == searchKey)
         {
+            cout << "entersIF" << endl;
             // TODO: find out if should return location in char buffer or location in int buffer
             eid = location*4; // Multiply by 4 to have index entry in char buffer
             return 0;
