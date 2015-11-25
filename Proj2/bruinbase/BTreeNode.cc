@@ -162,8 +162,9 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
 	// Set the old node's buffer from the 43rd node to the end as "empty" (e.g. -1)
     memset(buffer+bytePos_midPlus1Pair, -1, remBytes);
 	// Set the old nodes sibling pointer to new node
+    
     //setNextNodePtr(sibling);
-	bufferInts[255] = *(PageId*) &sibling;          // CHANGED FROM ORIGINAL!!!!!!
+	//bufferInts[255] = *(PageId*) &sibling;          // CHANGED FROM ORIGINAL!!!!!!
 	
 	// Insert new pair 
 	if(inOld){
