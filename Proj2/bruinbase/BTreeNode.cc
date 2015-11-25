@@ -316,7 +316,7 @@ int BTNonLeafNode::getKeyCount() {
         int* bufferInts = (int *) buffer;
         // Calculate the increment in integer size to get to next pair
         int pairIncr = nonLeafNode_pairSize/4;
-        for (int pairIndex = 0; pairIndex < nonLeafNode_keyLimit * pairIncr; pairIndex += pairIncr)
+        for (int pairIndex = 1; pairIndex < nonLeafNode_keyLimit * pairIncr; pairIndex += pairIncr)
         {
             /* Detect when buffer becomes unused */
             if(bufferInts[pairIndex] == -1)
@@ -449,20 +449,24 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
  */
 RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid){
     // page id | key | page id | key ... | pageid
-
+    //cout << "In locateChildPtr" << endl;
+    //cout << "SearchKey: " << searchKey << endl;
     char* memoryPointer = &(buffer[0]);
     
-    memoryPointer = memoryPointer + sizeof(int);     // skip first page id
+   // memoryPointer = memoryPointer + sizeof(int);     // skip first page id
     
     memcpy(&pid, memoryPointer, sizeof(PageId));
+    //cout << "pid1: " << pid << endl;
     
-    memoryPointer = memoryPointer + sizeof(PageId);     // skip first key
-    
+    memoryPointer = memoryPointer + sizeof(PageId);     
     int keyPointedTo = 0;
     
-    while (memoryPointer) {
+    int* p = (int *) buffer;
+    int keyCount = getKeyCount();
+   // cout << "keycount is: " << keyCount << endl;
+    while (keyCount > 0) {
         memcpy(&keyPointedTo, memoryPointer, sizeof(int));
-
+    //    cout << "KeyPointedTo: " << keyPointedTo << endl;
         //cout << "test" << endl;
         
         if (searchKey < keyPointedTo) {
@@ -474,10 +478,13 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid){
         }
         
         memoryPointer = memoryPointer + sizeof(int);        // based on memcpy above, move 4 bytes
-        
+       
         memcpy(&pid, memoryPointer, sizeof(PageId));
+     //   cout << "pid2: " << pid << endl;
         
         memoryPointer = memoryPointer + sizeof(PageId);
+        
+        keyCount -= 1;
     }
     
     return 0;       // success
@@ -494,7 +501,7 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
     //int* bufferInts = (int *) buffer;
     
     char* memoryPointer = &(buffer[0]);
-    memoryPointer = memoryPointer + sizeof(int);
+    //memoryPointer = memoryPointer + sizeof(int);
     
     memcpy(memoryPointer, &pid1, sizeof(PageId));
     memoryPointer = memoryPointer + sizeof(PageId);
@@ -504,9 +511,9 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
     
     memcpy(memoryPointer, &pid2, sizeof(PageId));
     
-    int initializedValue = 1;
+    //int initializedValue = 1;
     
-    memcpy(buffer, &initializedValue, sizeof(int));
+   // memcpy(buffer, &initializedValue, sizeof(int));
     
     return 0;
 }
