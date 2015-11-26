@@ -162,8 +162,9 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
     // Set the old node's buffer from the 43rd node to the end as "empty" (e.g. -1)
     memset(buffer+bytePos_midPlus1Pair, -1, remBytes);
     // Set the old nodes sibling pointer to new node
+    
     //setNextNodePtr(sibling);
-    bufferInts[255] = *(PageId*) &sibling;          // CHANGED FROM ORIGINAL!!!!!!
+    //bufferInts[255] = *(PageId*) &sibling;          // CHANGED FROM ORIGINAL!!!!!!
     
     // Insert new pair
     if(inOld){
@@ -516,4 +517,25 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
     // memcpy(buffer, &initializedValue, sizeof(int));
     
     return 0;
+}
+
+// function for testing
+void BTNonLeafNode::printContents()
+{
+    int* p = (int *) buffer;
+    int keyCount = getKeyCount();
+    
+    
+    cout << "Key Count: " << keyCount << endl;
+    /*
+     for(int i = 0; i < keyCount; i++)
+     {
+     cout << "PageId: " << *(p + (2*i)) << endl;
+     cout << "Key: " << *(p+ (2*i) + 1) << endl;
+     }*/
+    for(int i = 0; i < keyCount; i++)
+    {
+        cout << "(pid, key): " << "(" << *(p + (2*i)) << ", " << *(p+ (2*i) + 1) << ")" << endl;
+        cout << "(pid, key, pid ): " << "(" << *(p + (2*i)) << ", " << *(p+ (2*i) + 1)<< ", " << *(p+ (2*i) + 2) << ")" << endl;
+    }
 }
