@@ -57,27 +57,14 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
     // open the table file
     if ((rc = rf.open(table + ".tbl", 'r')) < 0) {
-
         fprintf(stderr, "Error: table %s does not exist\n", table.c_str());
-
         return rc;
-
     }  
-
-    /*
-    If a SELECT query has one or more conditions on the key column and if the table has a B+tree, use the B+tree to help answer the query as follows:
-       * If there exists an equality condition on key, you should always use the equality condition in looking up the index.
-       * Queries which specify a range (like key >= 10 and key < 100) must use the index. 
-         SqlEngine should try to avoid retrieving the tuples outside of this range from the underlying table by using the index.
-       * You should not to use an inequality condition <> on key in looking up the B+tree.
-       * You should avoid unnecessary page reads of getting information about the "value" column(s);
-         for example, if ONLY "key" column(s) exist in a SELECT statement, or if travesing leaf nodes on B+tree returns the count(*).
-    */
 
     // scan the table file from the beginning
     rid.pid = rid.sid = 0;
     count = 0;
-    if (index.open(table+".idx", 'r')) // No index
+    if (bTreeIndex.open(table+".idx", 'r')) // No index
     {
         while (rid < rf.endRid()) {
            // read the tuple
@@ -149,7 +136,16 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         rc = 0;
     }
     else{ // We have an index
-
+    /*
+    If a SELECT query has one or more conditions on the key column and if the table has a B+tree, use the B+tree to help answer the query as follows:
+       * If there exists an equality condition on key, you should always use the equality condition in looking up the index.
+       * Queries which specify a range (like key >= 10 and key < 100) must use the index. 
+         SqlEngine should try to avoid retrieving the tuples outside of this range from the underlying table by using the index.
+       * You should not to use an inequality condition <> on key in looking up the B+tree.
+       * You should avoid unnecessary page reads of getting information about the "value" column(s);
+         for example, if ONLY "key" column(s) exist in a SELECT statement, or if travesing leaf nodes on B+tree returns the count(*).
+    */
+    //fart
         
     }
 
