@@ -140,58 +140,57 @@ exit_select:
  */
 RC SqlEngine::load(const string& table, const string& loadfile, bool index)
 {
-    /* your code here */
-    // Copied from the select function
-    printf("Entered Load");
+     // Copied from the select function
     RecordFile rf;   // record for the table
     RecordId   rid;  // record cursor for table scanning
-    
+    BTreeIndex bTreeIndex;
+
     RC     rc;
     int    key;
     string value;
-    
+
     // open the table file (Copied from select function, but with write attribute instead of read
     if ((rc = rf.open(table + ".tbl", 'w')) < 0) { // Create a record file named movie.tbl
         fprintf(stderr, "Error: Failed to create or open table %s \n", table.c_str());
         return rc;
     }
-    
-    BTreeIndex bTreeIndex;
-    if(index)
-    {
-        // creates the corresponding B+tree index on the key column of the table
-        // index file should be named 'tblname.idx' where tblname is the name of the table, and created in the current working directory
-        // for every tuple inserted into the table, you obtain RecordId of the inserted tuple, and insert a corresponding (key, RecordId) pair to the B+tree of the table
-        
+
+    if(index){
         if ((rc = bTreeIndex.open(table + ".idx", 'w') != 0)) {     // index failed to open
             fprintf(stderr, "Error: Failed to open index \n");
             return rc;
         }
-        
+    }
+
+    // open file stream
+    fstream loading (loadfile.c_str());
+    if(loading.is_open()){
+        string line;
+        while(getline(loading, line))
+        {
+            // Append to table
+            parseLoadLine(line, key, value);
+            rc = rf.append(key, value, rid);
+            if(index){
+                if(rc < 0)
+                    return rc;
+                else
+                    bTreeIndex.insert(key, rid);
+            }
+        }
+
+        loading.close();
     }
     else{
-        // Get end of records
-        rid = rf.endRid();
-        // open file stream
-        fstream loading (loadfile.c_str());
-        if(loading.is_open()){
-            string line;
-            while(getline(loading, line))
-            {
-                // Append to table
-                parseLoadLine(line, key, value);
-                rc = rf.append(key, value, rid);
-            }
-            loading.close();
-        }
-        else{
-            fprintf(stderr, "Error: Failed to open load file %s \n", loadfile.c_str());
-            rc =  RC_FILE_OPEN_FAILED;
-        }
+        fprintf(stderr, "Error: Failed to open load file %s \n", loadfile.c_str());
+        rc =  RC_FILE_OPEN_FAILED;
     }
-    
+
+    if(index)
+        bTreeIndex.close();
+
     rf.close();
-    
+
     return rc;
 }
 
