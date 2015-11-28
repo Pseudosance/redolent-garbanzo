@@ -145,8 +145,61 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
        * You should avoid unnecessary page reads of getting information about the "value" column(s);
          for example, if ONLY "key" column(s) exist in a SELECT statement, or if travesing leaf nodes on B+tree returns the count(*).
     */
-    //fart
+       //fart
+        int searchKey = -1;
+        int value = -1;
+        int attr = -1;
+        // 0 is EQ, 1 is NE, 2 is LT, 3 is GT, 4 is LE, 5 is GE
+        int comparator = -1;
+
+        // Find lowerbound key of our search
+        for(unsigned i = 0; i < cond.size(); i++){
+            value = cond[i].value;
+            attr = cond[i].attr;
+            comparator = cond[i].comp;
+         
+            // We only use the index on key conditions
+            if(attr != 1){
+                continue;
+            }
         
+            //If there exists an equality condition on key, you should always use the equality condition in looking up the index.
+            if(comparator == SelCond::EQ){
+                searchKey = value;
+                break;
+            }   
+
+            //Queries which specify a range (like key >= 10 and key < 100) must use the index. 
+            if(comparator == SelCond::GE || comparator == SelCond::GT){
+                if(searchKey < value)    // Don't just set searchKey = value, because we may have other conditions we passed 
+                    searchKey = value;
+            }
+        }
+       
+        //Get an index cursor to point to the location of our lowerbound
+        bTreeIndex.locate(searchKey, indexCursor);
+        if(comparator == -1){ // if comparator is -1, that means there were no conditions, so we would return all of that column
+            indexCursor.eid = 0;
+            indexCursor.pid = 1; // Furthest left leaf is pid = 1 due to our implementation (0 is tree data (height and rootpid), root is variable)
+        }        
+
+        // scan through the leaf nodes starting at our lowerbound and print out the tuple if we pass all conditions
+        while(bTreeIndex.readForward(indexCursor, key, rid) == 0) // If readforawrd doesn't return 0, we reached the end
+        {
+            // Read in tuple
+               //TODO
+
+            // See if tuple passes all our conditions
+
+            // If tuple passes all conditions, increment count and print right tuple values 
+                // Note: Don't print if the attr = 4 (select count(*))             
+
+        }     
+
+        // If attr = 4 (select count(*))
+            // Print out the count     
+
+        // Close the BTreeIndex
     }
 
     // close the table file and return
