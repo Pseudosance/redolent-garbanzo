@@ -73,6 +73,7 @@ class SqlEngine {
   void printTuple(const int attr, const int key, int value);
   void printCount(const int attr, const int count);
   int  conditionCheck(const SelCond::Comparator comparator, const int diff);
+  int getDiff(const int key, string value, int diff);
 };
 
 #endif /* SQLENGINE_H */

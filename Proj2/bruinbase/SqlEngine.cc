@@ -57,6 +57,17 @@ void SqlEngine::printCount(const int attr, const int count){
         }
 }
 
+int SqlEngine::getDiff(const int key, string value, SelCond cond){
+    switch (cond.attr) {
+        case 1:
+          return (key - atoi(cond.value));
+          break;
+        case 2:
+    	  return (strcmp(value.c_str(), cond.value));
+	      break;
+    }
+}
+
 // If 1 is returned we skip to next tuple, if 0, means we passed the check and print out tuple and increment count
 int SqlEngine::conditionCheck(const SelCond::Comparator comparator, const int diff){
         switch (comparator) {
@@ -84,8 +95,7 @@ int SqlEngine::conditionCheck(const SelCond::Comparator comparator, const int di
                 if (diff >= 0) 
                     return 1;
                 break;
-        }
-        
+        }       
         return 0;
 }
 
@@ -131,14 +141,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             // look at the tuple and check its conditions accordingly
             for (unsigned i = 0; i < cond.size(); i++) {
                 // get diff between tuple val and condition val
-                switch (cond[i].attr) {
-                    case 1:
-                        diff = strcmp(value.c_str(), cond[i].value);
-                        break;
-                    case 2:
-                        diff = key - atoi(cond[i].value);
-                        break;
-                }
+                diff = getDiff(key, value, cond[i]);
                 
                 // no condition met? SKIP THE TUPLE
                 if(conditionCheck(cond[i].comp, diff))
@@ -220,20 +223,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             // See if tuple passes all our conditions
             for (unsigned i = 0; i < cond.size(); i++) 
             {
-                temp_attr = cond[i].attr;
-                cond_value = cond[i].value;
                 comparator = cond[i].comp;
                 
                 // get diff between tuple val and condition val
-                switch (temp_attr) 
-                {
-                    case 1:
-                        diff = key - atoi(cond_value);
-                        break;
-                    case 2:
-                        diff = strcmp(value.c_str(), cond[i].value);
-                        break;
-                }
+                diff = getDiff(key, value, cond[i]);
                     
                 // no condition met? SKIP THE TUPLE
                 if(conditionCheck(comparator, diff))
