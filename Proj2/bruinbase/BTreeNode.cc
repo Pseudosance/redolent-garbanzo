@@ -198,9 +198,9 @@ RC BTLeafNode::locate(int searchKey, int& eid)
     // iterate through the node looking for the searchKey.
         // TODO: Change to binary search for improved performance, it is hinted we should do so because the nodes are always sorted.
     int location;
-    for (location = 0; location < 255 && bufferInts[location] != -1; location+=3){
+    for (location = 0; location < 255 && bufferInts[location] != -1 && bufferInts[location+2] <= searchKey; location+=3){
         int key_pos = location+2;
-        
+       // cout << bufferInts[key_pos] << endl;
         if(bufferInts[key_pos] == searchKey)
         {
             // TODO: find out if should return location in char buffer or location in int buffer

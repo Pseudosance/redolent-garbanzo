@@ -247,12 +247,12 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
             rc = nonLeafNode.read(pid, pf);
     
             if (rc < 0) {
-                //cout << "ZOINKS ! :(" << endl;
+                cout << "ZOINKS ! :(" << endl;
                 return rc;
             }
             rc = nonLeafNode.locateChildPtr(searchKey, pid);
             if (rc < 0) {
-                //cout << "entered the bad zone :(" << endl;
+                cout << "entered the bad zone :(" << endl;
                 return rc;
             }
         }
@@ -264,14 +264,14 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
     
     rc = leafNode.read(pid, pf);
     if (rc < 0) {
-        //cout << "oh no :(" << endl;
+        cout << "oh no :(" << endl;
         return rc;
     }
 
     rc = leafNode.locate(searchKey, eid);
-
     if (rc < 0) {
-        //cout << "NAH :(" << endl;
+        cursor.pid = pid;
+        cursor.eid = eid;
         return RC_NO_SUCH_RECORD;
     }
     

@@ -177,6 +177,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         int searchKey = NULL;
         int cond_value = -1;
         int temp_attr = -1;
+        bool need_read = false;
         // 0 is NOT_SET, 1 is EQ, 2 is NE, 3 is LT, 4 is GT, 5 is LE, 6 is GE
         SelCond::Comparator comparator = SelCond::NOT_SET;
 
@@ -188,6 +189,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                         
             // We only use the index on key conditions
             if(temp_attr != 1){
+                need_read = true;
                 continue;
             }
         
@@ -208,26 +210,28 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         }
        
         //Get an index cursor to point to the location of our lowerbound
-        //cout << "searchKey = " << searchKey;
+        //cout << "searchKey = " << searchKey << endl;
         if(comparator == SelCond::NOT_SET || searchKey == NULL){ // if comparator is NOT_SET, that means there were no conditions, so we would return all of that column
             indexCursor.eid = 0;
             indexCursor.pid = 1; // Furthest left leaf is pid = 1 due to our implementation (0 is tree data (height and rootpid), root is variable)
         }
         else        
              bTreeIndex.locate(searchKey, indexCursor);
-        //cout << "Right before the readForward" << endl;
+        //cout << "indexCursor.pid = " << indexCursor.pid << endl;
+        //cout << "indexCursor.eid = " << indexCursor.eid << endl;
         // scan through the leaf nodes starting at our lowerbound and print out the tuple if we pass all conditions
         while(bTreeIndex.readForward(indexCursor, key, rid) == 0) // If readforawrd doesn't return 0, we reached the end
         {
-            // Read in tuple
-            if ((rc = rf.read(rid, key, value)) < 0) {
+            if (need_read && attr != 4 && ((rc = rf.read(rid, key, value)) < 0)) {
                 fprintf(stderr, "Error: cannot read tuple from table %s\n", table.c_str());
                 goto exit_select;
             }
-            
             // See if tuple passes all our conditions
             for (unsigned i = 0; i < cond.size(); i++) 
             {
+                if(attr == 4 && cond[i].attr !=1)
+                    continue;
+                    
                 comparator = cond[i].comp;
                 
                 // get diff between tuple val and condition val
@@ -242,7 +246,14 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             // If tuple passes all conditions, increment count and print right tuple values 
                 // Note: Don't print if the attr = 4 (select count(*))            
             count++;
-            // fprintf the tuple
+            
+            // fprintf the tuple, need value to print
+            if(!need_read){
+                if (attr != 4 && ((rc = rf.read(rid, key, value)) < 0)) {
+                    fprintf(stderr, "Error: cannot read tuple from table %s\n", table.c_str());
+                    goto exit_select;
+                }
+            }
             printTuple(attr, key, value);
             
             index_next_tuple:
@@ -252,9 +263,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
         // If attr = 4 (select count(*))
         printCount(attr, count);
-        rc = 0;
-        
-
+        rc = 0;       
     }
 
     // close the table file and return
