@@ -519,4 +519,3 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
     return 0;
 }
 
-}
