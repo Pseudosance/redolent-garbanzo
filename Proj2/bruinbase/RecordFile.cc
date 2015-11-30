@@ -11,8 +11,11 @@
 #include "RecordFile.h"
 #include <cstring>
 
-using std::string;
+#include <iostream>
+#include <stdio.h>
 
+//using std::string;
+using namespace std;
 //
 // helper functions for page manipultation
 //
@@ -167,6 +170,7 @@ RC RecordFile::close()
 
 RC RecordFile::read(const RecordId& rid, int& key, string& value) const
 {
+  //cout << "Record File read with rid (pid,sid) = (" << rid.pid << ", " << rid.sid << ") key = " << key << " and value = " << value << endl;
   RC   rc;
   char page[PageFile::PAGE_SIZE];
   

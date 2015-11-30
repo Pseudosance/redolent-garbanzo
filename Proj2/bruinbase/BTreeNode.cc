@@ -21,6 +21,7 @@ BTLeafNode::BTLeafNode()
  */
 RC BTLeafNode::read(PageId pid, const PageFile& pf)
 { 
+    //cout << "leaf node Reading pid: " << pid  << endl;
     return pf.read(pid, buffer);
 }
     
@@ -293,6 +294,7 @@ BTNonLeafNode::BTNonLeafNode() {        // had to add in public for BTreeNode.h
  */
 RC BTNonLeafNode::read(PageId pid, const PageFile& pf) {
     //return 0;
+    //cout << "Nonleaf read pid = " << pid  << endl;
      return pf.read(pid, buffer);
 }
     
