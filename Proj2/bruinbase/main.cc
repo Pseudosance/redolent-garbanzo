@@ -45,31 +45,7 @@ int main()
 {
     // run the SQL engine taking user commands from standard input (console).
     SqlEngine::run(stdin);
-    
-     BTreeIndex idx;
-     IndexCursor ic;
-     int key;
-     RecordId rid;
-     rid.sid = 2;
-     rid.pid = 1;
-     
-     assert(idx.open("testingindex",'w') == 0);
-     cout << "Starting forloop to insert" << endl;
-     for(int i = 0; i < 90; i++){
-         idx.insert(i, rid);
-     }
-     
-     if(idx.locate(0, ic) != 0){
-        cout << "Error locating cursor" << endl;
-     }
-        
-     cout << "ic.eid: " << ic.eid << endl;
-     cout << "ic.pid: " << ic.pid << endl;
-        
-        
-     while(!idx.readForward(ic,key,rid)){
-         cout << "Key: " << key << endl;
-     }
+
      
      return 0;
 

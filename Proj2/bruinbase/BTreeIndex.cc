@@ -81,25 +81,6 @@ RC BTreeIndex::close()
 
 // Recommended to use recursion 
 //////////////////////////////////////// INSERT HELPERS ////////////////////////////////////////////////////////////
-/*RC BTreeIndex::insertOnEmptyTree(int key, const RecordId& rid){
-        cout << "in insertOnEmptyTree" << endl;
-        RC rc;
-        BTLeafNode leafNode;
-        rc = leafNode.insert(key, rid);
-        if (rc < 0) {
-            cout << "leaf node insert failed" << endl;
-            return rc;
-        }
-        rootPid = pf.endPid();
-        rc = leafNode.write(rootPid, pf);
-        if (rc < 0) {
-            cout << "leafNode write failed" << endl;
-            return rc;
-        }
-        treeHeight = treeHeight + 1;
-        cout << "incremented treeHeight" << endl;
-        return 0;
-}*/
 
 RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode, int height, PageId& newNode, int& newKey){
 
@@ -188,6 +169,7 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
                 treeHeight+=1;
             }
             
+            
             return rc;                
         }
         else{ // else If node doesn't split, we should reset these parameters to null
@@ -254,8 +236,8 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
     BTNonLeafNode nonLeafNode;
     BTLeafNode leafNode;
     
-    cout << searchKey << " Is the searchKey Parameter" << endl;
-    cout << treeHeight << " is treeHeight" << endl;
+    //cout << searchKey << " Is the searchKey Parameter" << endl;
+    //cout << treeHeight << " is treeHeight" << endl;
     
     int height;
     
@@ -265,12 +247,12 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
             rc = nonLeafNode.read(pid, pf);
     
             if (rc < 0) {
-                cout << "ZOINKS ! :(" << endl;
+                //cout << "ZOINKS ! :(" << endl;
                 return rc;
             }
             rc = nonLeafNode.locateChildPtr(searchKey, pid);
             if (rc < 0) {
-                cout << "entered the bad zone :(" << endl;
+                //cout << "entered the bad zone :(" << endl;
                 return rc;
             }
         }
@@ -282,30 +264,16 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
     
     rc = leafNode.read(pid, pf);
     if (rc < 0) {
-        cout << "oh no :(" << endl;
+        //cout << "oh no :(" << endl;
         return rc;
     }
 
     rc = leafNode.locate(searchKey, eid);
 
     if (rc < 0) {
-        cout << "NAH :(" << endl;
+        //cout << "NAH :(" << endl;
         return RC_NO_SUCH_RECORD;
     }
-    
-    /*
-    int keyCount = leafNode.getKeyCount();
-    cout << keyCount << " is KeyCount" << endl;
-    RecordId rid;
-    int key;
-    for (int i = 0; i < 85 * 12; i+=12 )
-    {
-        leafNode.readEntry(i, key, rid);
-        cout << "Entry: " << i << " "
-        << "Key: " << key << " "
-        << "RecordId (pid,sid): " << "(" << rid.pid << "," << rid.sid << ")" << endl;
-    }
-    */
     
     cursor.pid = pid;
     cursor.eid = eid;
@@ -327,7 +295,6 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
     if(cursor.pid == -1){
         return RC_END_OF_TREE;
     }
-    cout << "cursor eid = " << cursor.eid << endl;
     RC rc;
     BTLeafNode node;
     // Read pair
@@ -344,13 +311,9 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
         // Check if pid, eid was last entry in node, if so get next node and change the pid and eid of cursor
         int curKey = (cursor.eid+12)/12;
         int keyCount = node.getKeyCount();
-        cout << "curKey = " << curKey << endl;
-        cout << "keyCount = " << keyCount << endl;
         if(curKey >= keyCount)
         {
-            cout << "current pid = " << cursor.pid <<endl;
             cursor.pid = node.getNextNodePtr();
-            cout << "next node pid = " << cursor.pid <<endl;
             cursor.eid = 0;
         }
         // else increment eid by 12 
