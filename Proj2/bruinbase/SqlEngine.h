@@ -19,7 +19,7 @@
  */
 struct SelCond {
   int attr;     // attribute: 1 - key column,  2 - value column
-  enum Comparator { EQ, NE, LT, GT, LE, GE } comp;
+  enum Comparator { NOT_SET, EQ, NE, LT, GT, LE, GE } comp;
   char* value;  // the value to compare
 };
 
@@ -67,6 +67,12 @@ class SqlEngine {
    * @return error code. 0 if no error
    */
   static RC parseLoadLine(const std::string& line, int& key, std::string& value);
+  
+  private:
+  // Helpers for select, self-explanatory
+  void printTuple(const int attr, const int key, int value);
+  void printCount(const int attr, const int count);
+  int  conditionCheck(const SelCond::Comparator comparator, const int diff);
 };
 
 #endif /* SQLENGINE_H */
