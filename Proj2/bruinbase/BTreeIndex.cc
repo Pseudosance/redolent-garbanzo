@@ -292,6 +292,8 @@ RC BTreeIndex::locate(int searchKey, IndexCursor& cursor)
                             //  (pid, eid)         key   (pageid, slotid)
 RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 {
+    //cout << "Inside readForward" << endl;
+    //cout << "(cursor.pid, cursor.eid) = (" << cursor.pid << ", " << cursor.eid << " )" << endl; 
     if(cursor.pid == -1){
         return RC_END_OF_TREE;
     }

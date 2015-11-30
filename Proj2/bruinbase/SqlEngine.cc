@@ -174,7 +174,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     */
         has_Index = true;
         int skip_count = -1;
-        int searchKey = -1;
+        int searchKey = NULL;
         int cond_value = -1;
         int temp_attr = -1;
         // 0 is NOT_SET, 1 is EQ, 2 is NE, 3 is LT, 4 is GT, 5 is LE, 6 is GE
@@ -185,7 +185,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             cond_value = atoi(cond[i].value);
             temp_attr = cond[i].attr;
             comparator = cond[i].comp;
-         
+                        
             // We only use the index on key conditions
             if(temp_attr != 1){
                 continue;
@@ -199,18 +199,23 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
             //Queries which specify a range (like key >= 10 and key < 100) must use the index. 
             if(comparator == SelCond::GE || comparator == SelCond::GT){
-                if(searchKey < cond_value)    // Don't just set searchKey = cond_value, because we may have other conditions we passed 
+                if(searchKey != NULL && searchKey < cond_value)    // Don't just set searchKey = cond_value, because we may have other conditions we passed 
                     searchKey = cond_value;
+                else if(searchKey == NULL){
+                    searchKey = cond_value;
+                }
             }
         }
        
         //Get an index cursor to point to the location of our lowerbound
-        bTreeIndex.locate(searchKey, indexCursor);
-        if(comparator == SelCond::NOT_SET){ // if comparator is NOT_SET, that means there were no conditions, so we would return all of that column
+        //cout << "searchKey = " << searchKey;
+        if(comparator == SelCond::NOT_SET || searchKey == NULL){ // if comparator is NOT_SET, that means there were no conditions, so we would return all of that column
             indexCursor.eid = 0;
             indexCursor.pid = 1; // Furthest left leaf is pid = 1 due to our implementation (0 is tree data (height and rootpid), root is variable)
-        }        
-
+        }
+        else        
+             bTreeIndex.locate(searchKey, indexCursor);
+        //cout << "Right before the readForward" << endl;
         // scan through the leaf nodes starting at our lowerbound and print out the tuple if we pass all conditions
         while(bTreeIndex.readForward(indexCursor, key, rid) == 0) // If readforawrd doesn't return 0, we reached the end
         {
