@@ -68,12 +68,12 @@ class SqlEngine {
    */
   static RC parseLoadLine(const std::string& line, int& key, std::string& value);
   
-  private:
+
   // Helpers for select, self-explanatory
-  void printTuple(const int attr, const int key, int value);
-  void printCount(const int attr, const int count);
-  int  conditionCheck(const SelCond::Comparator comparator, const int diff);
-  int getDiff(const int key, string value, int diff);
+  static void printTuple( int attr,  int key, std::string value);
+  static void printCount( int attr,  int count);
+  static int  conditionCheck( SelCond::Comparator comparator,  int diff);
+  static int getDiff( int key, std::string value, const SelCond cond);
 };
 
 #endif /* SQLENGINE_H */
