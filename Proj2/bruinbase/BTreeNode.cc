@@ -140,28 +140,33 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
 	
 	// Get an int buffer because its easier to work with
     int* bufferInts = (int *) buffer;
-	// Find where to split at, leaf node holds 85 pairs, put 43 in left node and 42 in right (Value for bufferInts)
-	int split_at = 43*3; // 0-42 = 43 in left, position in bufferInts is 129 (start of 43rd pair)
+    
+    // Where the key should go
+    int inOld_pos;
+    locate(key, inOld_pos);
+    
+    // Find where to split at, leaf node holds 85 pairs, put 43 in left node and 42 in right (Value for bufferInts)
+    int split_at = leafNode_tupleLimit/2 + 1; // 43
+    bool inOld = false;
+    if(inOld_pos < split_at){
+        inOld = true;
+        // If in old node, then 0-41 (42 tuples) go into old and the new node making 43 tuples
+        split_at--;
+    }
+    
 	// Middle byte pos of middle + 1 pair in buffer
-	int bytePos_midPlus1Pair = split_at * sizeof(int); // 129 * 4 = 516 (value for buffer)
+	int bytePos_splitAt = split_at * sizeof(int); // 129 * 4 = 516 (value for buffer)
 	// size of buffer available to use after saving end for the sibling pointer
 	int trueBufferSize = PageFile::PAGE_SIZE - sizeof(PageId); // 1024 - 4 = 1020
 	// Remaining bytes in buffer (1024 - 4 - 516) = 504
-	int remBytes = trueBufferSize - bytePos_midPlus1Pair;
-	
-	// Determine if new pair should go into old node or new node (Compare new pair to the split at -1)
-	bool inOld = true;
-	if(bufferInts[split_at-1] < key) // key is greater than middle, it goes into new node
-	{
-		inOld = false;
-	}
+	int remBytes = trueBufferSize - bytePos_splitAt;
 	
 	// Copy pairs 43 - 85 to the beginning of the new node's buffer
-    memmove(sibling.buffer, buffer+bytePos_midPlus1Pair, remBytes);
+    memmove(sibling.buffer, buffer+bytePos_splitAt, remBytes);
 	// Set the new nodes sibling pointer to old nodes sibling pointer 
     memmove(sibling.buffer+trueBufferSize, buffer+trueBufferSize, sizeof(PageId)); // last 4 bytes of the new nodes buffer is set to the last 4 bytes of the old nodes buffer
 	// Set the old node's buffer from the 43rd node to the end as "empty" (e.g. -1)
-    memset(buffer+bytePos_midPlus1Pair, -1, remBytes);
+    memset(buffer+bytePos_splitAt, -1, remBytes);
 	// Set the old nodes sibling pointer to new node
     
     //setNextNodePtr(sibling);
