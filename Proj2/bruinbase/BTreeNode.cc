@@ -325,12 +325,15 @@ int BTNonLeafNode::getKeyCount() {
         int pairIncr = nonLeafNode_pairSize/4;
         for (int pairIndex = 1; pairIndex < nonLeafNode_keyLimit * pairIncr; pairIndex += pairIncr)
         {
+            // TODO: Remove cout
+            cout << "bufferInts[pairIndex] = " << bufferInts[pairIndex] << " with a pairIndex of " << pairIndex << endl;
             /* Detect when buffer becomes unused */
             if(bufferInts[pairIndex] == -1)
                 break;
             else
                 count += 1;
         }
+        cout << "Count = " << count << endl;
         return count;
 }
 
@@ -347,7 +350,7 @@ RC BTNonLeafNode::insert(int key, PageId pid) {
     int* bufferInts = (int *) buffer;
     
     // Check if node is full
-    if(bufferInts[nonLeafNode_keyLimit*2-2] != -1)      // is -2 correct?
+    if(bufferInts[nonLeafNode_keyLimit*2-1] != -1)      // is -2 correct?
         return RC_NODE_FULL;
     
     // Find first free space in Node to insert pair and find slot to insert new key
@@ -356,19 +359,19 @@ RC BTNonLeafNode::insert(int key, PageId pid) {
     int old_pageID = -1;
     int old_key;
     
-    for (free_slot = 0; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=2) {
+    for (free_slot = 1; free_slot < (PageFile::PAGE_SIZE/sizeof(int))-1; free_slot+=2) {
         if (bufferInts[free_slot] == -1) {
-            bufferInts[free_slot] = pid;
-            bufferInts[free_slot+1] = key;
+            bufferInts[free_slot+1] = pid;
+            bufferInts[free_slot] = key;
             break;
         }
         // Key values, if greater than our key, then that's the slot for our new key, repeat process for old pair
-        if (bufferInts[free_slot+1] > key)      // this is 1, right?
+        if (bufferInts[free_slot] > key)      // this is 1, right?
         {
-            old_pageID = bufferInts[free_slot];
-            old_key = bufferInts[free_slot + 1];        // this is 1, right?
-            bufferInts[free_slot] = pageID;
-            bufferInts[free_slot+1] = key;
+            old_pageID = bufferInts[free_slot+1];
+            old_key = bufferInts[free_slot];        // this is 1, right?
+            bufferInts[free_slot+1] = pageID;
+            bufferInts[free_slot] = key;
             key = old_key;
             pageID = old_pageID;
         }
@@ -379,8 +382,8 @@ RC BTNonLeafNode::insert(int key, PageId pid) {
         return 0;
     
     // If old key is not null, we need to insert all the old shit into the free slot.
-    bufferInts[free_slot] = old_pageID;
-    bufferInts[free_slot+1] = old_key;
+    bufferInts[free_slot+1] = old_pageID;
+    bufferInts[free_slot] = old_key;
     
     return 0;
 }
