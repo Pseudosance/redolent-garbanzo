@@ -119,6 +119,7 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
                // If the currentNode is the rootPid and we are a leaf node and splitting
               
                 BTNonLeafNode rootNode; 
+                rootNode.initBuffer();
                 rc = rootNode.initializeRoot(rootPid, newKey, newNode);
                 rootPid = pf.endPid();
                 rc = rootNode.write(rootPid, pf);
