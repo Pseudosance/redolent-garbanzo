@@ -513,8 +513,17 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid){
  * @return 0 if successful. Return an error code if there is an error.
  */
 RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
-    //int* bufferInts = (int *) buffer;
+    int* bufferInts = (int *) buffer;
+    PageId* bufferPages = (PageId *) buffer;
     
+    for(int i = 0; i < (PageFile::PAGE_SIZE/sizeof(int)); i++){
+        bufferInts[i] = -2;
+    }
+    
+    bufferPages[0] = pid1;
+    bufferInts[1] = key;
+    bufferPages[2] =  pid2;
+    /*
     char* memoryPointer = &(buffer[0]);
     //memoryPointer = memoryPointer + sizeof(int);
     
@@ -526,8 +535,8 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
     
     memcpy(memoryPointer, &pid2, sizeof(PageId));
     memoryPointer+= sizeof(PageId);
-    memset(memoryPointer, -2, (PageFile::PAGE_SIZE - sizeof(PageId) - nonLeafNode_pairSize));
-    
+   // memset(memoryPointer, -2, (PageFile::PAGE_SIZE - sizeof(PageId) - nonLeafNode_pairSize));
+    */
     //int initializedValue = 1;
     
    // memcpy(buffer, &initializedValue, sizeof(int));
@@ -536,6 +545,12 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
 }
 
 void BTNonLeafNode::initBuffer(){
-    memset(buffer, -2, PageFile::PAGE_SIZE);
+    int* bufferInts = (int *) buffer;
+    PageId* bufferPages = (PageId *) buffer;
+    
+    for(int i = 0; i < (PageFile::PAGE_SIZE/sizeof(int)); i++){
+        bufferInts[i] = -2;
+    }
+
 }
 

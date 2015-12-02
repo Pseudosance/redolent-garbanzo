@@ -334,7 +334,7 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
 void BTreeIndex::printTree(){
     queue<PageId> toVisit;
     toVisit.push(rootPid);
-    
+    cout << "Root Pid: " << rootPid << endl;
     bool leaf = false;
     int buffer[256];
     while(toVisit.size() > 0){
@@ -373,7 +373,8 @@ void BTreeIndex::printTree(){
             toVisit.push(buffer[0]);
             for(int i = 1; i < 254; i+=2){
                 cout << "key = " << buffer[i] << " and pid = " << buffer[i+1] << endl;
-                toVisit.push(buffer[i+1]);
+                if(buffer[i+1] != -2)
+                    toVisit.push(buffer[i+1]);
             }
         }
 
