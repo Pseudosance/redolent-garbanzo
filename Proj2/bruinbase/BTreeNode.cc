@@ -416,34 +416,37 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     
     int inOld_pos;
     for(inOld_pos = 1; inOld_pos < nonLeafNode_keyLimit*2; inOld_pos+=2 ){
+        if(inOld_pos == 1)
+            cout << "inOld_pos inside loop with value 1" << endl;
         if(bufferInts[inOld_pos] >= key)
             break;
     }
-    inOld_pos = (inOld_pos-1)/2;
+    cout << "inOld_pos = " << inOld_pos << endl;
+    
+    inOld_pos = inOld_pos/2 +1; //127
     bool inOld = false;
     if(inOld_pos < split_at){
         inOld = true;
         split_at--;     // split at = 63,    0-63 and new pair go into old (64 tuples), and 65 - 127  go into new
     }
     
-    split_at*=2; // 0-63 = 64 in left, position in bufferInts is 128 (start of 64th pair)
+    inOld_pos = inOld_pos*2 -1;
+    split_at= split_at*2 -1; // 0-63 = 64 in left, position in bufferInts is 127 (start of 64th pair)
     
     if(inOld)
         midKey = bufferInts[split_at];
     else{
         if(inOld_pos == split_at)
-            midKey = key;
+            midKey = keyInserting;
         else
-            midKey = bufferInts[split_at+1];
+            midKey = bufferInts[split_at];
     }
     
     
     // Middle byte pos of middle + 1 pair in buffer
-    int bytePos_splitAt = (split_at+1) * sizeof(int); // 129 * 4 = 516 (value for buffer)
-    // Increment 1 entry cus push key up
-    bytePos_splitAt += sizeof(int); //520 (pid, 65th, pid)
+    int bytePos_splitAt = (split_at) * sizeof(int) +sizeof(int); // 508+4 = 512 (value for buffer)
 
-    // Remaining bytes in buffer (1024 - 520) = 504
+    // Remaining bytes in buffer (1024 - 512) = 512
     int remBytes = PageFile::PAGE_SIZE - bytePos_splitAt;
     
     // Copy pairs 64 - 127 to the beginning of the new node's buffer
