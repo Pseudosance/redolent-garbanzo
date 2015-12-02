@@ -144,7 +144,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
     // Where the key should go
     int inOld_pos;
     locate(key, inOld_pos);
-    
+    inOld_pos = inOld_pos/12;
     // Find where to split at, leaf node holds 85 pairs, put 43 in left node and 42 in right (Value for bufferInts)
     int split_at = leafNode_tupleLimit/2 + 1; // 43
     bool inOld = false;
@@ -155,7 +155,7 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid,
     }
     
 	// Middle byte pos of middle + 1 pair in buffer
-	int bytePos_splitAt = split_at * sizeof(int); // 129 * 4 = 516 (value for buffer)
+	int bytePos_splitAt = split_at * leafNode_pairSize; // 129 * 4 = 516 (value for buffer)
 	// size of buffer available to use after saving end for the sibling pointer
 	int trueBufferSize = PageFile::PAGE_SIZE - sizeof(PageId); // 1024 - 4 = 1020
 	// Remaining bytes in buffer (1024 - 4 - 516) = 504
@@ -408,45 +408,46 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     // Get an int buffer because it's easier to work with
     int* bufferInts = (int *) buffer;
     // Find where to split at, non-leaf node holds 127 pairs, put 64 in left node and 63 in right (Value for bufferInts)
-    int split_at = 64*2; // 0-63 = 64 in left, position in bufferInts is 128 (start of 64th pair)
+    int split_at = nonLeafNode_keyLimit/2 +1; // 64
+    
+    int inOld_pos;
+    for(inOld_pos = 1; inOld_pos < nonLeafNode_keyLimit*2; inOld_pos+=2 ){
+        if(bufferInts[inOld_pos] >= key)
+            break;
+    }
+    inOld_pos = (inOld_pos-1)/2;
+    bool inOld = false;
+    if(inOld_pos < split_at){
+        inOld = true;
+        split_at--;     // split at = 63,    0-63 and new pair go into old (64 tuples), and 64 - 127  go into new
+    }
+    
+    split_at*=2; // 0-63 = 64 in left, position in bufferInts is 128 (start of 64th pair)
+    
+    if(inOld)
+        midKey = bufferInts[split_at];
+    else{
+        if(inOld_pos == split_at)
+            midKey = key;
+        else
+            midKey = bufferInts[split_at];
+    }
+    
+    
     // Middle byte pos of middle + 1 pair in buffer
-    int bytePos_midPlus1Pair = split_at * sizeof(int); // 128 * 4 = 512 (value for buffer)
+    int bytePos_splitAt = split_at * sizeof(int); // 128 * 4 = 512 (value for buffer)
+    // Increment 1 entry cus push key up
+    bytePos_splitAt += nonLeafNode_pairSize;
     // size of buffer available to use after saving end for the sibling pointer
     int trueBufferSize = PageFile::PAGE_SIZE - sizeof(PageId); // 1024 - 4 = 1020
     // Remaining bytes in buffer (1024 - 4 - 512) = 508
-    int remBytes = trueBufferSize - bytePos_midPlus1Pair;
-    
-    // Determine if new pair should go into old node or new node (Compare new pair to the split at -1)
-    bool inOld = true;
-    if(bufferInts[split_at-1] < key) // key is greater than middle, it goes into new node
-    {
-        inOld = false;
-    }
+    int remBytes = trueBufferSize - bytePos_splitAt;
     
     // Copy pairs 64 - 127 to the beginning of the new node's buffer
-    memmove(sibling.buffer, buffer+bytePos_midPlus1Pair, remBytes);
-    // Set the new node's sibling pointer to old node's sibling pointer
-    memmove(sibling.buffer+trueBufferSize, buffer+trueBufferSize, sizeof(PageId)); // last 4 bytes of the new node's buffer is set to the last 4 bytes of the old node's buffer
+    memmove(sibling.buffer, buffer+bytePos_splitAt, remBytes);
     // Set the old node's buffer from the 64th node to the end as "empty" (e.g. -1)
-    memset(buffer+bytePos_midPlus1Pair, -1, remBytes);
-    // Set the old nodes sibling pointer to new node
-   // memset(buffer+1020, )
-    bufferInts[255] = *(PageId*) &sibling;              // CHANGED FROM ORIGINAL!!!!!
+    memset(buffer+bytePos_splitAt, -1, remBytes);
     
-    // Insert new pair
-    if(inOld){
-        insert(key, pid);
-    }
-    else{
-        sibling.insert(key, pid);
-    }
-    
-    //int* siblingBufferInts = (int *) sibling.buffer;
-
-    int* siblingBufferInts = (int *) sibling.buffer;
-    //siblingKey = siblingBufferInts[2];
-
-    midKey = siblingBufferInts[1];
     return 0;
 }
 
