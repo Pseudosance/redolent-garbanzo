@@ -178,6 +178,11 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         int cond_value = -1;
         int temp_attr = -1;
         bool need_read = false;
+        
+        bool equal = false;
+        IndexCursor upperCursor;
+        int upperBound = NULL;
+        
         // 0 is NOT_SET, 1 is EQ, 2 is NE, 3 is LT, 4 is GT, 5 is LE, 6 is GE
         SelCond::Comparator comparator = SelCond::NOT_SET;
 
@@ -196,6 +201,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             //If there exists an equality condition on key, you should always use the equality condition in looking up the index.
             if(comparator == SelCond::EQ){
                 searchKey = cond_value;
+                equal = true;
                 break;
             }   
 
@@ -207,6 +213,14 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
                     searchKey = cond_value;
                 }
             }
+            
+            if(comparator == SelCond::LE || comparator == SelCond::LT){
+                if(upperBound != NULL && upperBound > cond_value)
+                    upperBound = cond_value;
+                else if(upperBound == NULL){
+                    upperBound = cond_value;
+                }
+            }
         }
        
         //Get an index cursor to point to the location of our lowerbound
@@ -215,17 +229,32 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             indexCursor.eid = 0;
             indexCursor.pid = 1; // Furthest left leaf is pid = 1 due to our implementation (0 is tree data (height and rootpid), root is variable)
         }
-        else        
+        else{        
              bTreeIndex.locate(searchKey, indexCursor);
+             if(upperBound != NULL)
+                bTreeIndex.locate(upperBound, upperCursor);
+        }
         //cout << "indexCursor.pid = " << indexCursor.pid << endl;
         //cout << "indexCursor.eid = " << indexCursor.eid << endl;
         // scan through the leaf nodes starting at our lowerbound and print out the tuple if we pass all conditions
         while(bTreeIndex.readForward(indexCursor, key, rid) == 0) // If readforawrd doesn't return 0, we reached the end
         {
-            if (need_read && attr != 4 && ((rc = rf.read(rid, key, value)) < 0)) {
+            if(equal){
+                if(key == searchKey)
+                    if (attr != 4 && ((rc = rf.read(rid, key, value)) < 0)) {
+                        fprintf(stderr, "Error: cannot read tuple from table %s\n", table.c_str());
+                        goto exit_select;
+                    }
+                printTuple(attr, key, value);
+                count++;
+                break ;
+            }
+            
+            if (attr != 4 && ((rc = rf.read(rid, key, value)) < 0)) {
                 fprintf(stderr, "Error: cannot read tuple from table %s\n", table.c_str());
                 goto exit_select;
             }
+            
             // See if tuple passes all our conditions
             for (unsigned i = 0; i < cond.size(); i++) 
             {
@@ -246,15 +275,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             // If tuple passes all conditions, increment count and print right tuple values 
                 // Note: Don't print if the attr = 4 (select count(*))            
             count++;
-            
-            // fprintf the tuple, need value to print
-            if(!need_read){
-                if (attr != 4 && ((rc = rf.read(rid, key, value)) < 0)) {
-                    fprintf(stderr, "Error: cannot read tuple from table %s\n", table.c_str());
-                    goto exit_select;
-                }
-            }
             printTuple(attr, key, value);
+            
+            if(upperBound != NULL && (indexCursor.pid == upperCursor.pid) && (indexCursor.eid == upperCursor.eid) )
+                break;
             
             index_next_tuple:
                 skip_count++; // For shits and giggles
