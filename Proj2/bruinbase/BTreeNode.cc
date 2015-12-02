@@ -408,7 +408,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     if(sibling.getKeyCount() != 0){
         return RC_NODE_FULL;
     }
-    
+    int keyInserting = key;
     // Get an int buffer because it's easier to work with
     int* bufferInts = (int *) buffer;
     // Find where to split at, non-leaf node holds 127 pairs, put 64 in left node and 63 in right (Value for bufferInts)
@@ -423,7 +423,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     bool inOld = false;
     if(inOld_pos < split_at){
         inOld = true;
-        split_at--;     // split at = 63,    0-63 and new pair go into old (64 tuples), and 64 - 127  go into new
+        split_at--;     // split at = 63,    0-63 and new pair go into old (64 tuples), and 65 - 127  go into new
     }
     
     split_at*=2; // 0-63 = 64 in left, position in bufferInts is 128 (start of 64th pair)
@@ -434,23 +434,31 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
         if(inOld_pos == split_at)
             midKey = key;
         else
-            midKey = bufferInts[split_at];
+            midKey = bufferInts[split_at+1];
     }
     
     
     // Middle byte pos of middle + 1 pair in buffer
-    int bytePos_splitAt = split_at * sizeof(int); // 128 * 4 = 512 (value for buffer)
+    int bytePos_splitAt = (split_at+1) * sizeof(int); // 129 * 4 = 516 (value for buffer)
     // Increment 1 entry cus push key up
-    bytePos_splitAt += nonLeafNode_pairSize;
-    // size of buffer available to use after saving end for the sibling pointer
-    int trueBufferSize = PageFile::PAGE_SIZE - sizeof(PageId); // 1024 - 4 = 1020
-    // Remaining bytes in buffer (1024 - 4 - 512) = 508
-    int remBytes = trueBufferSize - bytePos_splitAt;
+    bytePos_splitAt += sizeof(int); //520 (pid, 65th, pid)
+
+    // Remaining bytes in buffer (1024 - 520) = 504
+    int remBytes = PageFile::PAGE_SIZE - bytePos_splitAt;
     
     // Copy pairs 64 - 127 to the beginning of the new node's buffer
     memmove(sibling.buffer, buffer+bytePos_splitAt, remBytes);
     // Set the old node's buffer from the 64th node to the end as "empty" (e.g. -1)
-    memset(buffer+bytePos_splitAt, -2, remBytes);
+    memset(buffer+(bytePos_splitAt-sizeof(int)), -2, remBytes+sizeof(int));
+    
+    // Insert new pair 
+	if(inOld){
+		insert(keyInserting, pid);
+	}
+	else{
+        if(midKey != keyInserting)
+		     sibling.insert(keyInserting, pid);
+	}
     
     return 0;
 }

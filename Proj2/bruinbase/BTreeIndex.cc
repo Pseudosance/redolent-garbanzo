@@ -168,6 +168,7 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
             // Note Special Case: If height == treeHeight and we need to split, then need a new root node (special because a return from here will exit recursiveInsert and thus loose the newNode and newKey values)
             if(treeHeight == height && currentNode == rootPid){
                 BTNonLeafNode rootNode; 
+                rootNode.initBuffer();
                 rc = rootNode.initializeRoot(rootPid, newKey, newNode);
                 rootPid = pf.endPid();
                 rc = rootNode.write(rootPid, pf);
