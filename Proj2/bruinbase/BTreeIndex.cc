@@ -340,9 +340,9 @@ void BTreeIndex::printTree(){
         PageId visiting = toVisit.front();
         toVisit.pop();
         
-        pf.read(toVisit, buffer);
+        pf.read(visiting, buffer);
         
-        if(toVisit == rootPid){
+        if(visiting == rootPid){
             cout << " PRINTING ROOT NODE " << endl;
             
             if(treeHeight == 0)
