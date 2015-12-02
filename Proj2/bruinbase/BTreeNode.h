@@ -113,6 +113,8 @@ class BTLeafNode {
     */
     RC write(PageId pid, PageFile& pf);
 
+    void initBuffer();
+    
   private:
    /**
     * The main memory buffer for loading the content of the disk page 

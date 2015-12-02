@@ -272,6 +272,10 @@ RC BTLeafNode::setNextNodePtr(PageId pid)
     return 0; 
 }
 
+void BTLeafNode::initBuffer(){
+    memset(buffer, -1, PageFile::PAGE_SIZE);
+}
+
 // TODO: Redo insert and insert and split using locate, getNextNodePtr, and setNextNodePtr....
 // TODO: Consider changing the buffer member variable to an int array instead of char arrary....
 

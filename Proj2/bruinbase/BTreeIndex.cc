@@ -102,6 +102,7 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
             // Pass the newSiblingKey and pageId of the newSiblingLeaf up a level with parameters (newNode, newKey)
 
            BTLeafNode newSiblingLeaf;
+           newSiblingLeaf.initBuffer();
            if((rc = leafNode.insertAndSplit(key, rid, newSiblingLeaf, newKey)) != 0)
            {
                fprintf(stderr, "Error: Insert and Split on leaf failed\n");
@@ -152,6 +153,7 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
         if(node.insert(newKey, newNode) != 0){
             // if we needa split the nonLeafNode
             BTNonLeafNode newSiblingNode;
+            newSiblingNode.initBuffer();
             if((rc = node.insertAndSplit(newKey, newNode, newSiblingNode, newKey)) != 0)
             {
                 fprintf(stderr, "Error: Insert and Split on nonLeaf failed\n");
