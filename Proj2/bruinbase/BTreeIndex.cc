@@ -162,8 +162,10 @@ RC BTreeIndex::recursiveInsert(int key, const RecordId& rid, PageId currentNode,
                 fprintf(stderr, "Error: Insert and Split on nonLeaf failed\n");
                 return rc;
             }
+            node.write(rootPid, pf);
             newNode = pf.endPid();
             rc = newSiblingNode.write(newNode, pf);
+            
             
             // Note Special Case: If height == treeHeight and we need to split, then need a new root node (special because a return from here will exit recursiveInsert and thus loose the newNode and newKey values)
             if(treeHeight == height && currentNode == rootPid){

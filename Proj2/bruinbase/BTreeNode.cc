@@ -416,12 +416,12 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     
     int inOld_pos;
     for(inOld_pos = 1; inOld_pos < nonLeafNode_keyLimit*2-1; inOld_pos+=2 ){
-        if(inOld_pos == 1)
-            cout << "inOld_pos inside loop with value 1" << endl;
+        //if(inOld_pos == 1)
+            //cout << "inOld_pos inside loop with value 1" << endl;
         if(bufferInts[inOld_pos] >= key)
             break;
     }
-    cout << "inOld_pos = " << inOld_pos << endl;
+    //cout << "inOld_pos = " << inOld_pos << endl;
     
     inOld_pos = inOld_pos/2 +1; //127
     bool inOld = false;
@@ -452,7 +452,16 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     // Copy pairs 64 - 127 to the beginning of the new node's buffer
     memmove(sibling.buffer, buffer+bytePos_splitAt, remBytes);
     // Set the old node's buffer from the 64th node to the end as "empty" (e.g. -1)
-    memset(buffer+(bytePos_splitAt-sizeof(int)), -2, remBytes+sizeof(int));
+    /*char *wipeFrom = buffer + bytePos_splitAt - sizeof(int);
+    remBytes+=4;
+    memset(wipeFrom, -2, remBytes);*/
+    int i = bytePos_splitAt/4;
+    i = i-1;
+    //cout << i <<endl;
+    for(i ; i < 256; i++){
+        bufferInts[i] = -2;
+    }
+    
     
     // Insert new pair 
 	if(inOld){
