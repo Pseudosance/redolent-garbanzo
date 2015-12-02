@@ -75,7 +75,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
     //PageId* bufferPageIds = (PageId *) buffer;
 	
 	// Check if node is full
-	if(bufferInts[leafNode_tupleLimit*3-2] != -1){
+	if(bufferInts[leafNode_tupleLimit*3-1] != -1){ // 255 is last int, but thats sibling ptr
 		return RC_NODE_FULL;
     }
     
@@ -86,7 +86,7 @@ RC BTLeafNode::insert(int key, const RecordId& rid)
 	int old_pageID = -1;
 	int old_slotID = -1;
 	int old_key = 0;    // should be 0?
-	for(free_slot = 0; free_slot < (PageFile::PAGE_SIZE/sizeof(int)); free_slot+=3){
+	for(free_slot = 0; free_slot < (PageFile::PAGE_SIZE/sizeof(int))-1; free_slot+=3){
 		if(bufferInts[free_slot] == -1){
             bufferInts[free_slot] = rid.pid;
             bufferInts[free_slot+1] = rid.sid;
@@ -208,12 +208,11 @@ RC BTLeafNode::locate(int searchKey, int& eid)
             eid = location*4; // Multiply by 4 to have index entry in char buffer
             return 0;
         }
+        if(bufferInts[key_pos] > searchKey)
+           break;
     }
     
-    if(location == 255){
-        eid = -1;
-        return RC_END_OF_TREE;
-    }
+    
     
     eid = location*4; // Find out if should return location in char buffer or location in int buffer...
     return RC_NO_SUCH_RECORD;
