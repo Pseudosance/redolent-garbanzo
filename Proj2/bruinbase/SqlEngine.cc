@@ -268,6 +268,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
 
     // close the table file and return
     exit_select:
+        bTreeIndex.printTree();
         // Close the BTreeIndex if opened
         if(has_Index)
             bTreeIndex.close();

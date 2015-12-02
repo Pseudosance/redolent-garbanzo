@@ -291,7 +291,7 @@ void BTLeafNode::initBuffer(){
  * Constructor
  */
 BTNonLeafNode::BTNonLeafNode() {        // had to add in public for BTreeNode.h
-    memset(buffer, -1, PageFile::PAGE_SIZE); //   from private: buffer[PageFile::PAGE_SIZE]
+    memset(buffer, -2, PageFile::PAGE_SIZE); //   from private: buffer[PageFile::PAGE_SIZE]
 }
 
 /*
@@ -332,7 +332,7 @@ int BTNonLeafNode::getKeyCount() {
             // TODO: Remove cout
             cout << "bufferInts[pairIndex] = " << bufferInts[pairIndex] << " with a pairIndex of " << pairIndex << endl;
             /* Detect when buffer becomes unused */
-            if(bufferInts[pairIndex] == -1)
+            if(bufferInts[pairIndex] == -2)
                 break;
             else
                 count += 1;
@@ -354,7 +354,7 @@ RC BTNonLeafNode::insert(int key, PageId pid) {
     int* bufferInts = (int *) buffer;
     
     // Check if node is full
-    if(bufferInts[nonLeafNode_keyLimit*2-1] != -1)      // is -2 correct?
+    if(bufferInts[nonLeafNode_keyLimit*2-1] != -2)      // is -2 correct?
         return RC_NODE_FULL;
     
     // Find first free space in Node to insert pair and find slot to insert new key
@@ -364,7 +364,7 @@ RC BTNonLeafNode::insert(int key, PageId pid) {
     int old_key;
     
     for (free_slot = 1; free_slot < (PageFile::PAGE_SIZE/sizeof(int))-1; free_slot+=2) {
-        if (bufferInts[free_slot] == -1) {
+        if (bufferInts[free_slot] == -2) {
             bufferInts[free_slot+1] = pid;
             bufferInts[free_slot] = key;
             break;
@@ -450,7 +450,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     // Copy pairs 64 - 127 to the beginning of the new node's buffer
     memmove(sibling.buffer, buffer+bytePos_splitAt, remBytes);
     // Set the old node's buffer from the 64th node to the end as "empty" (e.g. -1)
-    memset(buffer+bytePos_splitAt, -1, remBytes);
+    memset(buffer+bytePos_splitAt, -2, remBytes);
     
     return 0;
 }
@@ -526,7 +526,7 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
     
     memcpy(memoryPointer, &pid2, sizeof(PageId));
     memoryPointer+= sizeof(PageId);
-    memset(memoryPointer, -1, (PageFile::PAGE_SIZE - sizeof(PageId) - nonLeafNode_pairSize));
+    memset(memoryPointer, -2, (PageFile::PAGE_SIZE - sizeof(PageId) - nonLeafNode_pairSize));
     
     //int initializedValue = 1;
     
@@ -536,6 +536,6 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
 }
 
 void BTNonLeafNode::initBuffer(){
-    memset(buffer, -1, PageFile::PAGE_SIZE);
+    memset(buffer, -2, PageFile::PAGE_SIZE);
 }
 

@@ -12,6 +12,8 @@
 #include <iostream>
 #include <stdio.h>
 
+#include <queue>
+
 using namespace std;
 
 /*
@@ -326,4 +328,53 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid)
         }
         
     return 0;
+}
+
+void BTreeIndex::printTree(){
+    queue<PageId> toVisit;
+    toVisit.push(rootPid);
+    
+    bool leaf = false;
+    int buffer[256];
+    while(toVisit.size() > 0){
+        PageId visiting = toVisit.front();
+        toVisit.pop();
+        
+        pf.read(toVisit, buffer);
+        
+        if(toVisit == rootPid){
+            cout << " PRINTING ROOT NODE " << endl;
+            
+            if(treeHeight == 0)
+                leaf = true;
+            else
+                leaf = false;
+        }
+        else if(buffer[255] == -2){
+            cout << " PRINTING NON LEAF NODE " << endl;
+            leaf = false;
+        }
+        else{
+            cout << " PRINTING LEAF NODE " << endl;
+            leaf = true;
+        }
+        
+        cout << "-----------------------------" << endl;
+        
+        if(leaf){
+            for(int i = 0; i < 253; i+=3){
+                cout << "(" << buffer[i] << ", " << buffer[i+1] << ") " << " key = " << buffer[i+2] << endl;
+                
+            }
+        }
+        else{
+            cout << "Pid: " << buffer[0] << endl;
+            toVisit.push(buffer[0]);
+            for(int i = 1; i < 254; i+=2){
+                cout << "key = " << buffer[i] << " and pid = " << buffer[i+1] << endl;
+                toVisit.push(buffer[i+1]);
+            }
+        }
+
+    }
 }
