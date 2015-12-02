@@ -330,14 +330,14 @@ int BTNonLeafNode::getKeyCount() {
         for (int pairIndex = 1; pairIndex < nonLeafNode_keyLimit * pairIncr; pairIndex += pairIncr)
         {
             // TODO: Remove cout
-            cout << "bufferInts[pairIndex] = " << bufferInts[pairIndex] << " with a pairIndex of " << pairIndex << endl;
+           // cout << "bufferInts[pairIndex] = " << bufferInts[pairIndex] << " with a pairIndex of " << pairIndex << endl;
             /* Detect when buffer becomes unused */
             if(bufferInts[pairIndex] == -2)
                 break;
             else
                 count += 1;
         }
-        cout << "Count = " << count << endl;
+        //cout << "Count = " << count << endl;
         return count;
 }
 
@@ -415,7 +415,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
     int split_at = nonLeafNode_keyLimit/2 +1; // 64
     
     int inOld_pos;
-    for(inOld_pos = 1; inOld_pos < nonLeafNode_keyLimit*2; inOld_pos+=2 ){
+    for(inOld_pos = 1; inOld_pos < nonLeafNode_keyLimit*2-1; inOld_pos+=2 ){
         if(inOld_pos == 1)
             cout << "inOld_pos inside loop with value 1" << endl;
         if(bufferInts[inOld_pos] >= key)
