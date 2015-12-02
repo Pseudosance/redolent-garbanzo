@@ -521,11 +521,17 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
     memoryPointer = memoryPointer + sizeof(int);
     
     memcpy(memoryPointer, &pid2, sizeof(PageId));
+    memoryPointer+= sizeof(PageId);
+    memset(memoryPointer, -1, (PageFile::PAGE_SIZE - sizeof(PageId) - nonLeafNode_pairSize));
     
     //int initializedValue = 1;
     
    // memcpy(buffer, &initializedValue, sizeof(int));
     
     return 0;
+}
+
+void BTNonLeafNode::initBuffer(){
+    memset(buffer, -1, PageFile::PAGE_SIZE);
 }
 

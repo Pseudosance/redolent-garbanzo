@@ -193,6 +193,8 @@ class BTNonLeafNode {
     * @return 0 if successful. Return an error code if there is an error.
     */
     RC write(PageId pid, PageFile& pf);
+    
+    void initBuffer();
 
   private:
    /**
